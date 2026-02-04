@@ -687,31 +687,44 @@
         // FORM DISPLAY LOGIC
         // ========================================
         function showTimeEntryForm() {
-            document.getElementById('displayName').textContent = `${currentVendor.firstName} ${currentVendor.lastName}`;
-            document.getElementById('displayPayType').textContent = getPayTypeDisplay(currentVendor.payType);
-            document.getElementById('displayRate').textContent = getRateDisplay(currentVendor);
-            
-            hideAllTimeEntryFields();
-            
-            switch(currentVendor.payType) {
-                case 'hourly':
-                    document.getElementById('hourlyFields').classList.add('show');
-                    break;
-                case 'daily':
-                    document.getElementById('dailyFields').classList.add('show');
-                    break;
-                case 'routine':
-                    document.getElementById('routineFields').classList.add('show');
-                    break;
-                case 'fixed':
-                    document.getElementById('fixedFields').classList.add('show');
-                    document.getElementById('fixedRateDisplay').textContent = `$${currentVendor.fixedAmount.toFixed(2)}`;
-                    break;
-            }
-            
-            showSection('sectionTimeEntry');
-            calculatePayment();
-        }
+    document.getElementById('displayName').textContent = `${currentVendor.firstName} ${currentVendor.lastName}`;
+    document.getElementById('displayPayType').textContent = getPayTypeDisplay(currentVendor.payType);
+    document.getElementById('displayRate').textContent = getRateDisplay(currentVendor);
+    
+    hideAllTimeEntryFields();
+    
+    // Remove all conditional required attributes first
+    document.getElementById('clockIn').required = false;
+    document.getElementById('clockOut').required = false;
+    document.getElementById('dayType').required = false;
+    document.getElementById('routineCount').required = false;
+    document.getElementById('confirmFixed').required = false;
+    
+    // Show appropriate fields and set required
+    switch(currentVendor.payType) {
+        case 'hourly':
+            document.getElementById('hourlyFields').classList.add('show');
+            document.getElementById('clockIn').required = true;
+            document.getElementById('clockOut').required = true;
+            break;
+        case 'daily':
+            document.getElementById('dailyFields').classList.add('show');
+            document.getElementById('dayType').required = true;
+            break;
+        case 'routine':
+            document.getElementById('routineFields').classList.add('show');
+            document.getElementById('routineCount').required = true;
+            break;
+        case 'fixed':
+            document.getElementById('fixedFields').classList.add('show');
+            document.getElementById('fixedRateDisplay').textContent = `$${currentVendor.fixedAmount.toFixed(2)}`;
+            document.getElementById('confirmFixed').required = true;
+            break;
+    }
+    
+    showSection('sectionTimeEntry');
+    calculatePayment();
+}
         
         function hideAllTimeEntryFields() {
             document.querySelectorAll('.time-entry-fields').forEach(el => {
