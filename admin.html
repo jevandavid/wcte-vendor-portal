@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCTE Admin Dashboard - Vendor Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-card.pending {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-card.approved {
+            border-left-color: #28a745;
+        }
+        
+        .stat-card.paid {
+            border-left-color: #17a2b8;
+        }
+        
+        .stat-card h3 {
+            color: #6c757d;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .controls input,
+        .controls select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+        
+        .controls input:focus,
+        .controls select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .controls .search {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 6px 15px;
+            font-size: 0.85em;
+        }
+        
+        .submissions-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: #f8f9fa;
+        }
+        
+        th {
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #f1f3f5;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-paid {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+            font-size: 1.5em;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .detail-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            width: 180px;
+            flex-shrink: 0;
+        }
+        
+        .detail-value {
+            color: #333;
+            flex: 1;
+        }
+        
+        .payment-breakdown {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        
+        .payment-row.total {
+            border-top: 2px solid #667eea;
+            margin-top: 10px;
+            padding-top: 15px;
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .controls > * {
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+            }
+            
+            .detail-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Admin Dashboard</h1>
+        <p class="subtitle">WCTE Vendor Time Entry Management</p>
+    </div>
+    
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card pending">
+                <h3>Pending Review</h3>
+                <div class="value" id="statPending">0</div>
+                <div class="label">awaiting approval</div>
+            </div>
+            
+            <div class="stat-card approved">
+                <h3>Approved</h3>
+                <div class="value" id="statApproved">0</div>
+                <div class="label">ready for payment</div>
+            </div>
+            
+            <div class="stat-card paid">
+                <h3>Paid</h3>
+                <div class="value" id="statPaid">0</div>
+                <div class="label">completed</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Total Pending Amount</h3>
+                <div class="value" id="statAmount">$0</div>
+                <div class="label">to be processed</div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <input type="text" class="search" id="searchInput" placeholder="Search by vendor name, event, or location...">
+            
+            <select id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="Pending Review">Pending Review</option>
+                <option value="Approved">Approved</option>
+                <option value="Paid">Paid</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+            
+            <select id="dateFilter">
+                <option value="">All Dates</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+            
+            <button class="btn btn-primary" onclick="loadSubmissions()">Refresh</button>
+            <button class="btn btn-primary" onclick="exportToCSV()">Export CSV</button>
+        </div>
+        
+        <!-- Submissions Table -->
+        <div class="submissions-table">
+            <div class="table-wrapper">
+                <table id="submissionsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Vendor</th>
+                            <th>Event</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="submissionsBody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h3>No submissions found</h3>
+                <p>There are no time entries matching your filters.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Submission Details</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================
+        // CONFIGURATION
+        // ========================================
+        const GOOGLE_SHEET_ID = 'YOUR_GOOGLE_SHEET_ID';
+        const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY';
+        
+        // ========================================
+        // GLOBAL STATE
+        // ========================================
+        let allSubmissions = [];
+        let currentSubmission = null;
+        
+        // ========================================
+        // MOCK DATA (Replace with Google Sheets)
+        // ========================================
+        const MOCK_SUBMISSIONS = [
+            {
+                id: 'SUB001',
+                submissionDate: '2025-01-28T14:30:00',
+                vendorId: 'V001',
+                vendorName: 'Sarah Johnson',
+                vendorEmail: 'judge1@example.com',
+                payType: 'hourly',
+                eventDate: '2025-01-27',
+                eventName: 'Worcester Regional Championship',
+                eventLocation: 'Worcester, MA',
+                rolePerformed: 'Judge',
+                workDetails: 'Hours: 11.50 (Regular: 10.00, OT: 1.50)',
+                basePay: '350.00',
+                overtimePay: '78.75',
+                reimbursements: '45.00',
+                totalPay: '473.75',
+                status: 'Pending Review'
+            },
+            {
+                id: 'SUB002',
+                submissionDate: '2025-01-27T09:15:00',
+                vendorId: 'V003',
+                vendorName: 'Emily Rodriguez',
+                vendorEmail: 'instructor@example.com',
+                payType: 'daily',
+                eventDate: '2025-01-26',
+                eventName: 'Boston Dance Showcase',
+                eventLocation: 'Boston, MA',
+                rolePerformed: 'Instructor',
+                workDetails: 'Day Type: full',
+                basePay: '400.00',
+                overtimePay: '0.00',
+                reimbursements: '0.00',
+                totalPay: '400.00',
+                status: 'Approved'
+            },
+            {
+                id: 'SUB003',
+                submissionDate: '2025-01-26T16:45:00',
+                vendorId: 'V004',
+                vendorName: 'David Williams',
+                vendorEmail: 'judge2@example.com',
+                payType: 'routine',
+                eventDate: '2025-01-25',
+                eventName: 'Springfield Competition',
+                eventLocation: 'Springfield, MA',
+                rolePerformed: 'Judge',
+                workDetails: 'Routines: 85',
+                basePay: '170.00',
+                overtimePay: '0.00',
+                reimbursements: '25.00',
+                totalPay: '195.00',
+                status: 'Paid'
+            }
+        ];
+        
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSubmissions();
+            
+            // Setup event listeners
+            document.getElementById('searchInput').addEventListener('input', filterSubmissions);
+            document.getElementById('statusFilter').addEventListener('change', filterSubmissions);
+            document.getElementById('dateFilter').addEventListener('change', filterSubmissions);
+        });
+        
+        // ========================================
+        // DATA LOADING
+        // ========================================
+        async function loadSubmissions() {
+            try {
+                // TODO: Replace with actual Google Sheets API call
+                // For now, use mock data
+                await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+                allSubmissions = MOCK_SUBMISSIONS;
+                
+                updateStatistics();
+                displaySubmissions(allSubmissions);
+            } catch (error) {
+                console.error('Error loading submissions:', error);
+                alert('Failed to load submissions. Please refresh the page.');
+            }
+        }
+        
+        // ========================================
+        // STATISTICS
+        // ========================================
+        function updateStatistics() {
+            const pending = allSubmissions.filter(s => s.status === 'Pending Review');
+            const approved = allSubmissions.filter(s => s.status === 'Approved');
+            const paid = allSubmissions.filter(s => s.status === 'Paid');
+            
+            const pendingAmount = pending.reduce((sum, s) => sum + parseFloat(s.totalPay), 0);
+            
+            document.getElementById('statPending').textContent = pending.length;
+            document.getElementById('statApproved').textContent = approved.length;
+            document.getElementById('statPaid').textContent = paid.length;
+            document.getElementById('statAmount').textContent = `$${pendingAmount.toFixed(2)}`;
+        }
+        
+        // ========================================
+        // DISPLAY SUBMISSIONS
+        // ========================================
+        function displaySubmissions(submissions) {
+            const tbody = document.getElementById('submissionsBody');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (submissions.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            tbody.innerHTML = submissions.map(sub => `
+                <tr>
+                    <td>${formatDate(sub.eventDate)}</td>
+                    <td><strong>${sub.vendorName}</strong></td>
+                    <td>${sub.eventName}<br><small style="color: #6c757d;">${sub.eventLocation}</small></td>
+                    <td>${sub.payType}</td>
+                    <td><strong>$${parseFloat(sub.totalPay).toFixed(2)}</strong></td>
+                    <td><span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-info btn-sm" onclick="viewDetails('${sub.id}')">View</button>
+                            ${sub.status === 'Pending Review' ? `
+                                <button class="btn btn-success btn-sm" onclick="approveSubmission('${sub.id}')">Approve</button>
+                                <button class="btn btn-danger btn-sm" onclick="rejectSubmission('${sub.id}')">Reject</button>
+                            ` : ''}
+                            ${sub.status === 'Approved' ? `
+                                <button class="btn btn-success btn-sm" onclick="markAsPaid('${sub.id}')">Mark Paid</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // ========================================
+        // FILTERING
+        // ========================================
+        function filterSubmissions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            let filtered = allSubmissions.filter(sub => {
+                // Search filter
+                const matchesSearch = !searchTerm || 
+                    sub.vendorName.toLowerCase().includes(searchTerm) ||
+                    sub.eventName.toLowerCase().includes(searchTerm) ||
+                    sub.eventLocation.toLowerCase().includes(searchTerm);
+                
+                // Status filter
+                const matchesStatus = !statusFilter || sub.status === statusFilter;
+                
+                // Date filter
+                let matchesDate = true;
+                if (dateFilter) {
+                    const eventDate = new Date(sub.eventDate);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    switch(dateFilter) {
+                        case 'today':
+                            matchesDate = eventDate.toDateString() === today.toDateString();
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(today);
+                            weekAgo.setDate(weekAgo.getDate() - 7);
+                            matchesDate = eventDate >= weekAgo;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(today);
+                            monthAgo.setMonth(monthAgo.getMonth() - 1);
+                            matchesDate = eventDate >= monthAgo;
+                            break;
+                    }
+                }
+                
+                return matchesSearch && matchesStatus && matchesDate;
+            });
+            
+            displaySubmissions(filtered);
+        }
+        
+        // ========================================
+        // DETAIL VIEW
+        // ========================================
+        function viewDetails(submissionId) {
+            const submission = allSubmissions.find(s => s.id === submissionId);
+            if (!submission) return;
+            
+            currentSubmission = submission;
+            
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Submission ID:</div>
+                    <div class="detail-value">${submission.id}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Submitted:</div>
+                    <div class="detail-value">${new Date(submission.submissionDate).toLocaleString()}</div>
+                </div>
+                
+                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Vendor Information</h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Vendor Name:</div>
+                    <div class="detail-value">${submission.vendorName}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Email:</div>
+                    <div class="detail-value">${submission.vendorEmail}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Pay Type:</div>
+                    <div class="detail-value">${submission.payType}</div>
+                </div>
+                
+                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Event Details</h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Event Date:</div>
+                    <div class="detail-value">${formatDate(submission.eventDate)}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Event Name:</div>
+                    <div class="detail-value">${submission.eventName}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Location:</div>
+                    <div class="detail-value">${submission.eventLocation}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Role:</div>
+                    <div class="detail-value">${submission.rolePerformed}</div>
+                </div>
+                
+                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Work Details</h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Work Performed:</div>
+                    <div class="detail-value">${submission.workDetails}</div>
+                </div>
+                
+                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Payment Breakdown</h3>
+                
+                <div class="payment-breakdown">
+                    <div class="payment-row">
+                        <span>Base Pay:</span>
+                        <span>$${parseFloat(submission.basePay).toFixed(2)}</span>
+                    </div>
+                    
+                    ${parseFloat(submission.overtimePay) > 0 ? `
+                        <div class="payment-row">
+                            <span>Overtime Pay:</span>
+                            <span>$${parseFloat(submission.overtimePay).toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    
+                    ${parseFloat(submission.reimbursements) > 0 ? `
+                        <div class="payment-row">
+                            <span>Reimbursements:</span>
+                            <span>$${parseFloat(submission.reimbursements).toFixed(2)}</span>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="payment-row total">
+                        <span>TOTAL:</span>
+                        <span>$${parseFloat(submission.totalPay).toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value"><span class="status-badge status-${submission.status.toLowerCase().replace(' ', '-')}">${submission.status}</span></div>
+                </div>
+                
+                <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
+                    ${submission.status === 'Pending Review' ? `
+                        <button class="btn btn-success" onclick="approveSubmission('${submission.id}')">Approve</button>
+                        <button class="btn btn-danger" onclick="rejectSubmission('${submission.id}')">Reject</button>
+                    ` : ''}
+                    ${submission.status === 'Approved' ? `
+                        <button class="btn btn-success" onclick="markAsPaid('${submission.id}')">Mark as Paid</button>
+                    ` : ''}
+                    <button class="btn btn-primary" onclick="closeModal()">Close</button>
+                </div>
+            `;
+            
+            document.getElementById('detailModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            currentSubmission = null;
+        }
+        
+        // ========================================
+        // STATUS UPDATES
+        // ========================================
+        async function approveSubmission(submissionId) {
+            if (!confirm('Are you sure you want to approve this submission?')) return;
+            
+            try {
+                // TODO: Update Google Sheets
+                const submission = allSubmissions.find(s => s.id === submissionId);
+                if (submission) {
+                    submission.status = 'Approved';
+                }
+                
+                await loadSubmissions();
+                closeModal();
+                alert('Submission approved successfully!');
+            } catch (error) {
+                console.error('Error approving submission:', error);
+                alert('Failed to approve submission. Please try again.');
+            }
+        }
+        
+        async function rejectSubmission(submissionId) {
+            const reason = prompt('Please enter a reason for rejection:');
+            if (!reason) return;
+            
+            try {
+                // TODO: Update Google Sheets and send notification email
+                const submission = allSubmissions.find(s => s.id === submissionId);
+                if (submission) {
+                    submission.status = 'Rejected';
+                }
+                
+                await loadSubmissions();
+                closeModal();
+                alert('Submission rejected. Vendor will be notified.');
+            } catch (error) {
+                console.error('Error rejecting submission:', error);
+                alert('Failed to reject submission. Please try again.');
+            }
+        }
+        
+        async function markAsPaid(submissionId) {
+            if (!confirm('Confirm that payment has been processed?')) return;
+            
+            try {
+                // TODO: Update Google Sheets
+                const submission = allSubmissions.find(s => s.id === submissionId);
+                if (submission) {
+                    submission.status = 'Paid';
+                }
+                
+                await loadSubmissions();
+                closeModal();
+                alert('Marked as paid successfully!');
+            } catch (error) {
+                console.error('Error updating payment status:', error);
+                alert('Failed to update payment status. Please try again.');
+            }
+        }
+        
+        // ========================================
+        // EXPORT
+        // ========================================
+        function exportToCSV() {
+            const headers = ['Submission ID', 'Date', 'Vendor', 'Email', 'Event', 'Location', 'Role', 'Pay Type', 'Base Pay', 'Overtime', 'Reimbursements', 'Total', 'Status'];
+            
+            const rows = allSubmissions.map(sub => [
+                sub.id,
+                sub.eventDate,
+                sub.vendorName,
+                sub.vendorEmail,
+                sub.eventName,
+                sub.eventLocation,
+                sub.rolePerformed,
+                sub.payType,
+                sub.basePay,
+                sub.overtimePay,
+                sub.reimbursements,
+                sub.totalPay,
+                sub.status
+            ]);
+            
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(val => `"${val}"`).join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `wcte-submissions-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        // ========================================
+        // UTILITIES
+        // ========================================
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Close modal on outside click
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

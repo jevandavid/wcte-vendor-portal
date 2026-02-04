@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WCTE Vendor Portal - Time Entry</title>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .body {
+            padding: 40px 30px;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            margin: 30px -30px 25px -30px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .section-header:first-child {
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
+        }
+        
+        .required {
+            color: #dc3545;
+            margin-left: 3px;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 50px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            margin-left: 10px;
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            color: #0d47a1;
+        }
+        
+        .info-box strong {
+            color: #01579b;
+        }
+        
+        .calculation-box {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        
+        .calculation-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .calculation-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.2em;
+            color: #667eea;
+            padding-top: 15px;
+            margin-top: 10px;
+            border-top: 2px solid #667eea;
+        }
+        
+        .helper-text {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .vendor-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .vendor-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .vendor-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .vendor-card p {
+            color: #6c757d;
+            margin: 5px 0;
+        }
+        
+        .time-entry-fields {
+            display: none;
+        }
+        
+        .time-entry-fields.show {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .two-col,
+            .three-col {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .body {
+                padding: 30px 20px;
+            }
+            
+            .section-header {
+                margin-left: -20px;
+                margin-right: -20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WCTE Vendor Portal</h1>
+            <p class="subtitle">Time Entry & Payment Management</p>
+        </div>
+        
+        <div class="body">
+            <!-- Alert Messages -->
+            <div id="alertSuccess" class="alert alert-success"></div>
+            <div id="alertError" class="alert alert-error"></div>
+            <div id="alertWarning" class="alert alert-warning"></div>
+            
+            <!-- SECTION 1: Login / Vendor Selection -->
+            <div id="sectionLogin" class="section active">
+                <div class="section-header">Vendor Login</div>
+                
+                <div class="info-box">
+                    <p><strong>Welcome to the WCTE Vendor Portal</strong></p>
+                    <p>Please enter your email address to access your time entry form.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="vendorEmail">Your Email Address <span class="required">*</span></label>
+                    <input type="email" id="vendorEmail" placeholder="your@email.com" required>
+                    <p class="helper-text">Use the email address on file with WCTE</p>
+                </div>
+                
+                <button class="btn" onclick="loginVendor()">Continue</button>
+                
+                <div id="loadingLogin" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Verifying your information...</p>
+                </div>
+            </div>
+            
+            <!-- SECTION 2: Time Entry Form -->
+            <div id="sectionTimeEntry" class="section">
+                <div class="section-header">Time Entry Form</div>
+                
+                <!-- Vendor Info Display -->
+                <div id="vendorInfo" class="info-box">
+                    <p><strong>Vendor:</strong> <span id="displayName"></span></p>
+                    <p><strong>Pay Structure:</strong> <span id="displayPayType"></span></p>
+                    <p><strong>Rate:</strong> <span id="displayRate"></span></p>
+                </div>
+                
+                <form id="timeEntryForm">
+                    <!-- Event Information -->
+                    <div class="section-header">Event Information</div>
+                    
+                    <div class="form-group">
+                        <label for="eventDate">Date of Service <span class="required">*</span></label>
+                        <input type="date" id="eventDate" name="eventDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="eventName">Competition/Event Name <span class="required">*</span></label>
+                        <input type="text" id="eventName" name="eventName" placeholder="e.g., Worcester Regional Championship" required>
+                    </div>
+                    
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label for="eventLocation">Event Location <span class="required">*</span></label>
+                            <input type="text" id="eventLocation" name="eventLocation" placeholder="City, State" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="rolePerformed">Role Performed <span class="required">*</span></label>
+                            <select id="rolePerformed" name="rolePerformed" required>
+                                <option value="">Select Role</option>
+                                <option value="Judge">Judge</option>
+                                <option value="Choreographer">Choreographer</option>
+                                <option value="Instructor">Instructor</option>
+                                <option value="Adjudicator">Adjudicator</option>
+                                <option value="Staff">Staff</option>
+                                <option value="Technical">Technical Staff</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- HOURLY TIME ENTRY FIELDS -->
+                    <div id="hourlyFields" class="time-entry-fields">
+                        <div class="section-header">Time Worked</div>
+                        
+                        <div class="two-col">
+                            <div class="form-group">
+                                <label for="clockIn">Clock In Time <span class="required">*</span></label>
+                                <input type="time" id="clockIn" name="clockIn">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="clockOut">Clock Out Time <span class="required">*</span></label>
+                                <input type="time" id="clockOut" name="clockOut">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="breakMinutes">Break Time (minutes)</label>
+                            <input type="number" id="breakMinutes" name="breakMinutes" value="0" min="0">
+                            <p class="helper-text">Total unpaid break time in minutes</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="hoursWorked">Total Hours Worked</label>
+                            <input type="text" id="hoursWorked" readonly style="background: #f8f9fa; font-weight: 600;">
+                            <p class="helper-text">Auto-calculated (includes break deduction)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- DAILY RATE FIELDS -->
+                    <div id="dailyFields" class="time-entry-fields">
+                        <div class="section-header">Daily Rate</div>
+                        
+                        <div class="form-group">
+                            <label for="dayType">Day Type <span class="required">*</span></label>
+                            <select id="dayType" name="dayType">
+                                <option value="">Select Type</option>
+                                <option value="full">Full Day</option>
+                                <option value="half">Half Day</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- PER-ROUTINE FIELDS -->
+                    <div id="routineFields" class="time-entry-fields">
+                        <div class="section-header">Routine Count</div>
+                        
+                        <div class="form-group">
+                            <label for="routineCount">Number of Routines <span class="required">*</span></label>
+                            <input type="number" id="routineCount" name="routineCount" min="0" step="1">
+                            <p class="helper-text">Total number of routines judged/performed</p>
+                        </div>
+                    </div>
+                    
+                    <!-- FIXED AMOUNT FIELDS -->
+                    <div id="fixedFields" class="time-entry-fields">
+                        <div class="section-header">Fixed Payment</div>
+                        
+                        <div class="info-box">
+                            <p><strong>Fixed Rate:</strong> <span id="fixedRateDisplay"></span></p>
+                            <p>Your payment for this event is a set amount regardless of hours worked.</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="confirmFixed" name="confirmFixed" required>
+                                I confirm my attendance and work for this event
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- ADDITIONAL COMPENSATION -->
+                    <div class="section-header">Additional Compensation & Expenses</div>
+                    
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label for="travelReimbursement">Travel Reimbursement</label>
+                            <input type="number" id="travelReimbursement" name="travelReimbursement" value="0" min="0" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="mealAllowance">Meal Allowance</label>
+                            <input type="number" id="mealAllowance" name="mealAllowance" value="0" min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label for="lodgingReimbursement">Lodging Reimbursement</label>
+                            <input type="number" id="lodgingReimbursement" name="lodgingReimbursement" value="0" min="0" step="0.01">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="otherExpenses">Other Expenses</label>
+                            <input type="number" id="otherExpenses" name="otherExpenses" value="0" min="0" step="0.01">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenseNotes">Expense Notes/Receipts</label>
+                        <textarea id="expenseNotes" name="expenseNotes" placeholder="Describe any expenses and attach receipts if needed"></textarea>
+                    </div>
+                    
+                    <!-- NOTES -->
+                    <div class="form-group">
+                        <label for="additionalNotes">Additional Notes</label>
+                        <textarea id="additionalNotes" name="additionalNotes" placeholder="Any additional information or special circumstances"></textarea>
+                    </div>
+                    
+                    <!-- CALCULATION DISPLAY -->
+                    <div class="calculation-box" id="calculationBox">
+                        <h3 style="margin-bottom: 15px; color: #667eea;">Payment Calculation</h3>
+                        
+                        <div class="calculation-row">
+                            <span>Base Pay:</span>
+                            <span id="calcBasePay">$0.00</span>
+                        </div>
+                        
+                        <div class="calculation-row" id="calcOvertimeRow" style="display: none;">
+                            <span>Overtime Pay:</span>
+                            <span id="calcOvertimePay">$0.00</span>
+                        </div>
+                        
+                        <div class="calculation-row">
+                            <span>Reimbursements:</span>
+                            <span id="calcReimbursements">$0.00</span>
+                        </div>
+                        
+                        <div class="calculation-row">
+                            <span>TOTAL GROSS PAY:</span>
+                            <span id="calcTotal">$0.00</span>
+                        </div>
+                    </div>
+                    
+                    <!-- ACKNOWLEDGMENT -->
+                    <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
+                        <p style="color: #856404;"><strong>Acknowledgment:</strong></p>
+                        <p style="color: #856404;">By submitting this form, I certify that all information provided is accurate and truthful. I understand that this submission serves as my official time entry for payment processing.</p>
+                        <div style="margin-top: 15px;">
+                            <label>
+                                <input type="checkbox" id="acknowledge" name="acknowledge" required>
+                                <strong>I acknowledge and certify the above information is correct</strong> <span class="required">*</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button type="button" class="btn btn-secondary" onclick="logout()">Back to Login</button>
+                        <button type="submit" class="btn" id="submitBtn">Submit Time Entry</button>
+                    </div>
+                </form>
+                
+                <div id="loadingSubmit" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Submitting your time entry...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================
+        // CONFIGURATION
+        // ========================================
+        
+        // EmailJS Configuration
+        const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+        const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
+        const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+        
+        // Google Sheets Configuration
+        const GOOGLE_SHEET_ID = 'YOUR_GOOGLE_SHEET_ID';
+        const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY';
+        
+        // Initialize EmailJS
+        if (EMAILJS_PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        }
+        
+        // ========================================
+        // GLOBAL STATE
+        // ========================================
+        let currentVendor = null;
+        let vendorsList = [];
+        
+        // ========================================
+        // MOCK VENDOR DATA (Replace with Google Sheets)
+        // ========================================
+        // This is sample data. In production, this will come from Google Sheets
+        const MOCK_VENDORS = [
+            {
+                id: 'V001',
+                email: 'judge1@example.com',
+                firstName: 'Sarah',
+                lastName: 'Johnson',
+                payType: 'hourly',
+                hourlyRate: 35,
+                overtimeEligible: true,
+                overtimeThreshold: 10,
+                overtimeMultiplier: 1.5
+            },
+            {
+                id: 'V002',
+                email: 'choreographer@example.com',
+                firstName: 'Michael',
+                lastName: 'Chen',
+                payType: 'hourly',
+                hourlyRate: 20,
+                overtimeEligible: true,
+                overtimeThreshold: 10,
+                overtimeMultiplier: 1.5
+            },
+            {
+                id: 'V003',
+                email: 'instructor@example.com',
+                firstName: 'Emily',
+                lastName: 'Rodriguez',
+                payType: 'daily',
+                fullDayRate: 400,
+                halfDayRate: 200
+            },
+            {
+                id: 'V004',
+                email: 'judge2@example.com',
+                firstName: 'David',
+                lastName: 'Williams',
+                payType: 'routine',
+                perRoutineRate: 2
+            },
+            {
+                id: 'V005',
+                email: 'adjudicator@example.com',
+                firstName: 'Jessica',
+                lastName: 'Martinez',
+                payType: 'fixed',
+                fixedAmount: 500
+            }
+        ];
+        
+        // ========================================
+        // INITIALIZATION
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            document.getElementById('eventDate').valueAsDate = new Date();
+            
+            // Add event listeners for calculations
+            setupCalculationListeners();
+            
+            // Load vendors from Google Sheets (or use mock data)
+            loadVendors();
+        });
+        
+        // ========================================
+        // VENDOR LOADING
+        // ========================================
+        async function loadVendors() {
+            try {
+                // TODO: Replace with actual Google Sheets API call
+                // For now, use mock data
+                vendorsList = MOCK_VENDORS;
+                console.log('Vendors loaded:', vendorsList.length);
+            } catch (error) {
+                console.error('Error loading vendors:', error);
+                showAlert('error', 'Failed to load vendor data. Please refresh the page.');
+            }
+        }
+        
+        // ========================================
+        // LOGIN FUNCTIONALITY
+        // ========================================
+        async function loginVendor() {
+            const email = document.getElementById('vendorEmail').value.trim().toLowerCase();
+            
+            if (!email) {
+                showAlert('warning', 'Please enter your email address.');
+                return;
+            }
+            
+            document.getElementById('loadingLogin').style.display = 'block';
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Find vendor by email
+            const vendor = vendorsList.find(v => v.email.toLowerCase() === email);
+            
+            document.getElementById('loadingLogin').style.display = 'none';
+            
+            if (vendor) {
+                currentVendor = vendor;
+                showTimeEntryForm();
+            } else {
+                showAlert('error', 'Email not found. Please contact office@wctedance.com if you believe this is an error.');
+            }
+        }
+        
+        function logout() {
+            currentVendor = null;
+            document.getElementById('timeEntryForm').reset();
+            document.getElementById('eventDate').valueAsDate = new Date();
+            hideAllAlerts();
+            showSection('sectionLogin');
+        }
+        
+        // ========================================
+        // FORM DISPLAY LOGIC
+        // ========================================
+        function showTimeEntryForm() {
+            // Display vendor info
+            document.getElementById('displayName').textContent = `${currentVendor.firstName} ${currentVendor.lastName}`;
+            document.getElementById('displayPayType').textContent = getPayTypeDisplay(currentVendor.payType);
+            document.getElementById('displayRate').textContent = getRateDisplay(currentVendor);
+            
+            // Show/hide appropriate fields based on pay type
+            hideAllTimeEntryFields();
+            
+            switch(currentVendor.payType) {
+                case 'hourly':
+                    document.getElementById('hourlyFields').classList.add('show');
+                    break;
+                case 'daily':
+                    document.getElementById('dailyFields').classList.add('show');
+                    break;
+                case 'routine':
+                    document.getElementById('routineFields').classList.add('show');
+                    break;
+                case 'fixed':
+                    document.getElementById('fixedFields').classList.add('show');
+                    document.getElementById('fixedRateDisplay').textContent = `$${currentVendor.fixedAmount.toFixed(2)}`;
+                    break;
+            }
+            
+            showSection('sectionTimeEntry');
+            calculatePayment();
+        }
+        
+        function hideAllTimeEntryFields() {
+            document.querySelectorAll('.time-entry-fields').forEach(el => {
+                el.classList.remove('show');
+            });
+        }
+        
+        function getPayTypeDisplay(type) {
+            const types = {
+                'hourly': 'Hourly Rate',
+                'daily': 'Daily Rate',
+                'routine': 'Per-Routine',
+                'fixed': 'Fixed Amount'
+            };
+            return types[type] || type;
+        }
+        
+        function getRateDisplay(vendor) {
+            switch(vendor.payType) {
+                case 'hourly':
+                    return `$${vendor.hourlyRate}/hr${vendor.overtimeEligible ? ' (OT after ' + vendor.overtimeThreshold + ' hrs)' : ''}`;
+                case 'daily':
+                    return `Full: $${vendor.fullDayRate} | Half: $${vendor.halfDayRate}`;
+                case 'routine':
+                    return `$${vendor.perRoutineRate}/routine`;
+                case 'fixed':
+                    return `$${vendor.fixedAmount} per event`;
+                default:
+                    return 'N/A';
+            }
+        }
+        
+        // ========================================
+        // CALCULATION LOGIC
+        // ========================================
+        function setupCalculationListeners() {
+            // Hourly calculations
+            document.getElementById('clockIn')?.addEventListener('change', calculatePayment);
+            document.getElementById('clockOut')?.addEventListener('change', calculatePayment);
+            document.getElementById('breakMinutes')?.addEventListener('input', calculatePayment);
+            
+            // Daily calculations
+            document.getElementById('dayType')?.addEventListener('change', calculatePayment);
+            
+            // Routine calculations
+            document.getElementById('routineCount')?.addEventListener('input', calculatePayment);
+            
+            // Expense calculations
+            document.getElementById('travelReimbursement')?.addEventListener('input', calculatePayment);
+            document.getElementById('mealAllowance')?.addEventListener('input', calculatePayment);
+            document.getElementById('lodgingReimbursement')?.addEventListener('input', calculatePayment);
+            document.getElementById('otherExpenses')?.addEventListener('input', calculatePayment);
+        }
+        
+        function calculatePayment() {
+            if (!currentVendor) return;
+            
+            let basePay = 0;
+            let overtimePay = 0;
+            let regularHours = 0;
+            let overtimeHours = 0;
+            
+            // Calculate base pay based on pay type
+            switch(currentVendor.payType) {
+                case 'hourly':
+                    const result = calculateHourlyPay();
+                    basePay = result.basePay;
+                    overtimePay = result.overtimePay;
+                    regularHours = result.regularHours;
+                    overtimeHours = result.overtimeHours;
+                    
+                    // Display total hours worked
+                    document.getElementById('hoursWorked').value = 
+                        (regularHours + overtimeHours).toFixed(2) + ' hours';
+                    break;
+                    
+                case 'daily':
+                    basePay = calculateDailyPay();
+                    break;
+                    
+                case 'routine':
+                    basePay = calculateRoutinePay();
+                    break;
+                    
+                case 'fixed':
+                    basePay = currentVendor.fixedAmount;
+                    break;
+            }
+            
+            // Calculate reimbursements
+            const reimbursements = calculateReimbursements();
+            
+            // Update display
+            document.getElementById('calcBasePay').textContent = `$${basePay.toFixed(2)}`;
+            
+            if (overtimePay > 0) {
+                document.getElementById('calcOvertimeRow').style.display = 'flex';
+                document.getElementById('calcOvertimePay').textContent = `$${overtimePay.toFixed(2)}`;
+            } else {
+                document.getElementById('calcOvertimeRow').style.display = 'none';
+            }
+            
+            document.getElementById('calcReimbursements').textContent = `$${reimbursements.toFixed(2)}`;
+            document.getElementById('calcTotal').textContent = `$${(basePay + overtimePay + reimbursements).toFixed(2)}`;
+        }
+        
+        function calculateHourlyPay() {
+            const clockIn = document.getElementById('clockIn').value;
+            const clockOut = document.getElementById('clockOut').value;
+            const breakMinutes = parseFloat(document.getElementById('breakMinutes').value) || 0;
+            
+            if (!clockIn || !clockOut) {
+                return { basePay: 0, overtimePay: 0, regularHours: 0, overtimeHours: 0 };
+            }
+            
+            // Calculate total hours
+            const start = new Date(`2000-01-01T${clockIn}`);
+            const end = new Date(`2000-01-01T${clockOut}`);
+            let totalMinutes = (end - start) / (1000 * 60);
+            
+            // Handle overnight shifts
+            if (totalMinutes < 0) {
+                totalMinutes += 24 * 60;
+            }
+            
+            // Subtract break time
+            totalMinutes -= breakMinutes;
+            const totalHours = Math.max(0, totalMinutes / 60);
+            
+            let regularHours = totalHours;
+            let overtimeHours = 0;
+            let basePay = 0;
+            let overtimePay = 0;
+            
+            if (currentVendor.overtimeEligible && totalHours > currentVendor.overtimeThreshold) {
+                regularHours = currentVendor.overtimeThreshold;
+                overtimeHours = totalHours - currentVendor.overtimeThreshold;
+                basePay = regularHours * currentVendor.hourlyRate;
+                overtimePay = overtimeHours * currentVendor.hourlyRate * currentVendor.overtimeMultiplier;
+            } else {
+                basePay = totalHours * currentVendor.hourlyRate;
+            }
+            
+            return { basePay, overtimePay, regularHours, overtimeHours };
+        }
+        
+        function calculateDailyPay() {
+            const dayType = document.getElementById('dayType').value;
+            
+            if (dayType === 'full') {
+                return currentVendor.fullDayRate;
+            } else if (dayType === 'half') {
+                return currentVendor.halfDayRate;
+            }
+            
+            return 0;
+        }
+        
+        function calculateRoutinePay() {
+            const routineCount = parseFloat(document.getElementById('routineCount').value) || 0;
+            return routineCount * currentVendor.perRoutineRate;
+        }
+        
+        function calculateReimbursements() {
+            const travel = parseFloat(document.getElementById('travelReimbursement').value) || 0;
+            const meal = parseFloat(document.getElementById('mealAllowance').value) || 0;
+            const lodging = parseFloat(document.getElementById('lodgingReimbursement').value) || 0;
+            const other = parseFloat(document.getElementById('otherExpenses').value) || 0;
+            
+            return travel + meal + lodging + other;
+        }
+        
+        // ========================================
+        // FORM SUBMISSION
+        // ========================================
+        document.getElementById('timeEntryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentVendor) {
+                showAlert('error', 'Session expired. Please log in again.');
+                logout();
+                return;
+            }
+            
+            // Validate acknowledgment
+            if (!document.getElementById('acknowledge').checked) {
+                showAlert('warning', 'Please acknowledge that all information is correct.');
+                return;
+            }
+            
+            document.getElementById('loadingSubmit').style.display = 'block';
+            hideAllAlerts();
+            
+            try {
+                // Collect form data
+                const formData = collectFormData();
+                
+                // Submit to Google Sheets
+                await submitToGoogleSheets(formData);
+                
+                // Send email notification
+                await sendEmailNotification(formData);
+                
+                document.getElementById('loadingSubmit').style.display = 'none';
+                showAlert('success', 'Time entry submitted successfully! You will receive a confirmation email shortly.');
+                
+                // Reset form after 3 seconds
+                setTimeout(() => {
+                    document.getElementById('timeEntryForm').reset();
+                    document.getElementById('eventDate').valueAsDate = new Date();
+                    calculatePayment();
+                    document.getElementById('alertSuccess').classList.remove('show');
+                }, 3000);
+                
+            } catch (error) {
+                document.getElementById('loadingSubmit').style.display = 'none';
+                console.error('Submission error:', error);
+                showAlert('error', 'Failed to submit time entry. Please try again or contact office@wctedance.com');
+            }
+        });
+        
+        function collectFormData() {
+            const form = document.getElementById('timeEntryForm');
+            const formData = new FormData(form);
+            
+            // Calculate payment details
+            let basePay = 0;
+            let overtimePay = 0;
+            let details = '';
+            
+            switch(currentVendor.payType) {
+                case 'hourly':
+                    const hourlyResult = calculateHourlyPay();
+                    basePay = hourlyResult.basePay;
+                    overtimePay = hourlyResult.overtimePay;
+                    details = `Hours: ${(hourlyResult.regularHours + hourlyResult.overtimeHours).toFixed(2)} (Regular: ${hourlyResult.regularHours.toFixed(2)}, OT: ${hourlyResult.overtimeHours.toFixed(2)})`;
+                    break;
+                case 'daily':
+                    basePay = calculateDailyPay();
+                    details = `Day Type: ${formData.get('dayType')}`;
+                    break;
+                case 'routine':
+                    basePay = calculateRoutinePay();
+                    details = `Routines: ${formData.get('routineCount')}`;
+                    break;
+                case 'fixed':
+                    basePay = currentVendor.fixedAmount;
+                    details = 'Fixed Amount';
+                    break;
+            }
+            
+            const reimbursements = calculateReimbursements();
+            const totalPay = basePay + overtimePay + reimbursements;
+            
+            return {
+                // Vendor Info
+                vendorId: currentVendor.id,
+                vendorName: `${currentVendor.firstName} ${currentVendor.lastName}`,
+                vendorEmail: currentVendor.email,
+                payType: currentVendor.payType,
+                
+                // Event Info
+                eventDate: formData.get('eventDate'),
+                eventName: formData.get('eventName'),
+                eventLocation: formData.get('eventLocation'),
+                rolePerformed: formData.get('rolePerformed'),
+                
+                // Time/Work Details
+                workDetails: details,
+                clockIn: formData.get('clockIn') || 'N/A',
+                clockOut: formData.get('clockOut') || 'N/A',
+                breakMinutes: formData.get('breakMinutes') || '0',
+                dayType: formData.get('dayType') || 'N/A',
+                routineCount: formData.get('routineCount') || '0',
+                
+                // Expenses
+                travelReimbursement: formData.get('travelReimbursement') || '0',
+                mealAllowance: formData.get('mealAllowance') || '0',
+                lodgingReimbursement: formData.get('lodgingReimbursement') || '0',
+                otherExpenses: formData.get('otherExpenses') || '0',
+                expenseNotes: formData.get('expenseNotes') || '',
+                
+                // Payment Calculation
+                basePay: basePay.toFixed(2),
+                overtimePay: overtimePay.toFixed(2),
+                reimbursements: reimbursements.toFixed(2),
+                totalPay: totalPay.toFixed(2),
+                
+                // Notes
+                additionalNotes: formData.get('additionalNotes') || '',
+                
+                // Submission Info
+                submissionDate: new Date().toISOString(),
+                status: 'Pending Review'
+            };
+        }
+        
+        async function submitToGoogleSheets(data) {
+            // TODO: Implement Google Sheets API submission
+            console.log('Submitting to Google Sheets:', data);
+            
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // In production, this would be:
+            // await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Time_Entries:append...`)
+        }
+        
+        async function sendEmailNotification(data) {
+            if (EMAILJS_PUBLIC_KEY === 'YOUR_EMAILJS_PUBLIC_KEY') {
+                console.log('EmailJS not configured, skipping email');
+                return;
+            }
+            
+            const emailContent = `
+WCTE TIME ENTRY SUBMISSION
+=========================
+
+VENDOR INFORMATION:
+- Name: ${data.vendorName}
+- Email: ${data.vendorEmail}
+- Vendor ID: ${data.vendorId}
+- Pay Structure: ${data.payType}
+
+EVENT DETAILS:
+- Event: ${data.eventName}
+- Location: ${data.eventLocation}
+- Date: ${data.eventDate}
+- Role: ${data.rolePerformed}
+
+WORK PERFORMED:
+${data.workDetails}
+
+PAYMENT BREAKDOWN:
+- Base Pay: $${data.basePay}
+- Overtime Pay: $${data.overtimePay}
+- Travel: $${data.travelReimbursement}
+- Meals: $${data.mealAllowance}
+- Lodging: $${data.lodgingReimbursement}
+- Other Expenses: $${data.otherExpenses}
+----------------------------
+TOTAL: $${data.totalPay}
+
+EXPENSE NOTES:
+${data.expenseNotes || 'None'}
+
+ADDITIONAL NOTES:
+${data.additionalNotes || 'None'}
+
+STATUS: ${data.status}
+Submitted: ${new Date(data.submissionDate).toLocaleString()}
+            `;
+            
+            const templateParams = {
+                from_name: data.vendorName,
+                from_email: data.vendorEmail,
+                subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
+                message: emailContent,
+                reply_to: data.vendorEmail
+            };
+            
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+        }
+        
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+        
+        function showAlert(type, message) {
+            hideAllAlerts();
+            
+            let alertId = '';
+            switch(type) {
+                case 'success':
+                    alertId = 'alertSuccess';
+                    break;
+                case 'error':
+                    alertId = 'alertError';
+                    break;
+                case 'warning':
+                    alertId = 'alertWarning';
+                    break;
+            }
+            
+            const alertEl = document.getElementById(alertId);
+            alertEl.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            alertEl.classList.add('show');
+            alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function hideAllAlerts() {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.classList.remove('show');
+            });
+        }
+    </script>
+</body>
+</html>
