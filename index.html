@@ -981,30 +981,29 @@
                 submissionDate: new Date().toISOString(),
                 status: 'Pending Review'
             };
-        }
-        
-        async function submitToWebApp(data) {
-            const response = await fetch(WEBAPP_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'submitTimeEntry',
-                    data: data
-                })
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to submit to Google Sheets');
-            }
-            
-            return await response.json();
-        }
+      async function submitToWebApp(data) {
+    const response = await fetch(WEBAPP_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain',  // Changed from 'application/json'
+        },
+        body: JSON.stringify({
+            action: 'submitTimeEntry',
+            data: data
+        })
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to submit to Google Sheets');
+    }
+    
+    return await response.json();
+}
         
         async function sendEmailNotifications(data) {
             // Email to office
             const officeEmailContent = `
+
 WCTE TIME ENTRY SUBMISSION
 =========================
 
