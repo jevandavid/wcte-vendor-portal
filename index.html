@@ -263,32 +263,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        .vendor-card {
-            background: white;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .vendor-card:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .vendor-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-        
-        .vendor-card p {
-            color: #6c757d;
-            margin: 5px 0;
-        }
-        
         .time-entry-fields {
             display: none;
         }
@@ -562,22 +536,27 @@
     
     <script>
         // ========================================
-        // CONFIGURATION
+        // PRODUCTION CONFIGURATION
         // ========================================
         
-        // EmailJS Configuration
+        // EmailJS Configuration (PRODUCTION - YOUR ACTUAL CREDENTIALS)
         const EMAILJS_PUBLIC_KEY = '3hfbTN_SU-93VXhYt';
         const EMAILJS_SERVICE_ID = 'service_o8fi71j';
-        const EMAILJS_TEMPLATE_ID = 'template_1tfz67w';
+        const EMAILJS_TEMPLATE_OFFICE = 'template_1tfz67w'; // Office notification
+        const EMAILJS_TEMPLATE_CONFIRMATION = 'template_x7fzk5a'; // Vendor confirmation
         
-        // Google Sheets Configuration
+        // Google Sheets Configuration (PRODUCTION)
         const GOOGLE_SHEET_ID = '1JrFlCWmTVYkJME8CQYpwEG9WFWU3Ei-GFmv6hdTlRsg';
-        const GOOGLE_API_KEY = 'cfb9963ce5ff700a1143163f0fc7c1a451f601f6';
+        
+        // Google Apps Script Web App URL - YOU NEED TO SET THIS UP
+        // See SETUP_GUIDE.md for instructions on creating the Web App
+        let WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz9L9HpPFYqFUeLvJeZ4MmeALiiE4zPdIRcKLAGWPyh8-YvFJz8V43aJ2Nh-4VWYKyt/exec ';
+        
+        // TEMPORARY: Using mock data until Web App is deployed
+        const USE_MOCK_DATA = false; // Set to false once Web App is deployed
         
         // Initialize EmailJS
-        if (EMAILJS_PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
-            emailjs.init(EMAILJS_PUBLIC_KEY);
-        }
+        emailjs.init(EMAILJS_PUBLIC_KEY);
         
         // ========================================
         // GLOBAL STATE
@@ -586,9 +565,8 @@
         let vendorsList = [];
         
         // ========================================
-        // MOCK VENDOR DATA (Replace with Google Sheets)
+        // MOCK VENDOR DATA (Remove after Web App setup)
         // ========================================
-        // This is sample data. In production, this will come from Google Sheets
         const MOCK_VENDORS = [
             {
                 id: 'V001',
@@ -643,13 +621,8 @@
         // INITIALIZATION
         // ========================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Set today's date as default
             document.getElementById('eventDate').valueAsDate = new Date();
-            
-            // Add event listeners for calculations
             setupCalculationListeners();
-            
-            // Load vendors from Google Sheets (or use mock data)
             loadVendors();
         });
         
@@ -657,35 +630,23 @@
         // VENDOR LOADING
         // ========================================
         async function loadVendors() {
-    try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Vendors!A2:R?key=${GOOGLE_API_KEY}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        vendorsList = data.values.map(row => ({
-            id: row[0],
-            firstName: row[1],
-            lastName: row[2],
-            email: row[3],
-            phone: row[4],
-            payType: row[5],
-            hourlyRate: parseFloat(row[6]) || 0,
-            fullDayRate: parseFloat(row[7]) || 0,
-            halfDayRate: parseFloat(row[8]) || 0,
-            perRoutineRate: parseFloat(row[9]) || 0,
-            fixedAmount: parseFloat(row[10]) || 0,
-            overtimeEligible: row[11] === 'TRUE',
-            overtimeThreshold: parseFloat(row[12]) || 10,
-            overtimeMultiplier: parseFloat(row[13]) || 1.5,
-            active: row[14] === 'TRUE'
-        })).filter(v => v.active);
-        
-        console.log('Vendors loaded:', vendorsList.length);
-    } catch (error) {
-        console.error('Error loading vendors:', error);
-        showAlert('error', 'Failed to load vendor data. Please refresh the page.');
-    }
-}
+            try {
+                if (USE_MOCK_DATA) {
+                    // Using mock data for testing
+                    vendorsList = MOCK_VENDORS;
+                    console.log('Using mock vendor data:', vendorsList.length, 'vendors');
+                } else {
+                    // Load from Google Apps Script Web App
+                    const response = await fetch(`${WEBAPP_URL}?action=getVendors`);
+                    const data = await response.json();
+                    vendorsList = data.vendors;
+                    console.log('Vendors loaded from Web App:', vendorsList.length);
+                }
+            } catch (error) {
+                console.error('Error loading vendors:', error);
+                showAlert('error', 'Failed to load vendor data. Please refresh the page or contact office@wctedance.com');
+            }
+        }
         
         // ========================================
         // LOGIN FUNCTIONALITY
@@ -700,10 +661,8 @@
             
             document.getElementById('loadingLogin').style.display = 'block';
             
-            // Simulate API delay
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            // Find vendor by email
             const vendor = vendorsList.find(v => v.email.toLowerCase() === email);
             
             document.getElementById('loadingLogin').style.display = 'none';
@@ -728,12 +687,10 @@
         // FORM DISPLAY LOGIC
         // ========================================
         function showTimeEntryForm() {
-            // Display vendor info
             document.getElementById('displayName').textContent = `${currentVendor.firstName} ${currentVendor.lastName}`;
             document.getElementById('displayPayType').textContent = getPayTypeDisplay(currentVendor.payType);
             document.getElementById('displayRate').textContent = getRateDisplay(currentVendor);
             
-            // Show/hide appropriate fields based on pay type
             hideAllTimeEntryFields();
             
             switch(currentVendor.payType) {
@@ -791,18 +748,11 @@
         // CALCULATION LOGIC
         // ========================================
         function setupCalculationListeners() {
-            // Hourly calculations
             document.getElementById('clockIn')?.addEventListener('change', calculatePayment);
             document.getElementById('clockOut')?.addEventListener('change', calculatePayment);
             document.getElementById('breakMinutes')?.addEventListener('input', calculatePayment);
-            
-            // Daily calculations
             document.getElementById('dayType')?.addEventListener('change', calculatePayment);
-            
-            // Routine calculations
             document.getElementById('routineCount')?.addEventListener('input', calculatePayment);
-            
-            // Expense calculations
             document.getElementById('travelReimbursement')?.addEventListener('input', calculatePayment);
             document.getElementById('mealAllowance')?.addEventListener('input', calculatePayment);
             document.getElementById('lodgingReimbursement')?.addEventListener('input', calculatePayment);
@@ -817,7 +767,6 @@
             let regularHours = 0;
             let overtimeHours = 0;
             
-            // Calculate base pay based on pay type
             switch(currentVendor.payType) {
                 case 'hourly':
                     const result = calculateHourlyPay();
@@ -825,29 +774,21 @@
                     overtimePay = result.overtimePay;
                     regularHours = result.regularHours;
                     overtimeHours = result.overtimeHours;
-                    
-                    // Display total hours worked
-                    document.getElementById('hoursWorked').value = 
-                        (regularHours + overtimeHours).toFixed(2) + ' hours';
+                    document.getElementById('hoursWorked').value = (regularHours + overtimeHours).toFixed(2) + ' hours';
                     break;
-                    
                 case 'daily':
                     basePay = calculateDailyPay();
                     break;
-                    
                 case 'routine':
                     basePay = calculateRoutinePay();
                     break;
-                    
                 case 'fixed':
                     basePay = currentVendor.fixedAmount;
                     break;
             }
             
-            // Calculate reimbursements
             const reimbursements = calculateReimbursements();
             
-            // Update display
             document.getElementById('calcBasePay').textContent = `$${basePay.toFixed(2)}`;
             
             if (overtimePay > 0) {
@@ -870,17 +811,12 @@
                 return { basePay: 0, overtimePay: 0, regularHours: 0, overtimeHours: 0 };
             }
             
-            // Calculate total hours
             const start = new Date(`2000-01-01T${clockIn}`);
             const end = new Date(`2000-01-01T${clockOut}`);
             let totalMinutes = (end - start) / (1000 * 60);
             
-            // Handle overnight shifts
-            if (totalMinutes < 0) {
-                totalMinutes += 24 * 60;
-            }
+            if (totalMinutes < 0) totalMinutes += 24 * 60;
             
-            // Subtract break time
             totalMinutes -= breakMinutes;
             const totalHours = Math.max(0, totalMinutes / 60);
             
@@ -903,13 +839,8 @@
         
         function calculateDailyPay() {
             const dayType = document.getElementById('dayType').value;
-            
-            if (dayType === 'full') {
-                return currentVendor.fullDayRate;
-            } else if (dayType === 'half') {
-                return currentVendor.halfDayRate;
-            }
-            
+            if (dayType === 'full') return currentVendor.fullDayRate;
+            if (dayType === 'half') return currentVendor.halfDayRate;
             return 0;
         }
         
@@ -923,7 +854,6 @@
             const meal = parseFloat(document.getElementById('mealAllowance').value) || 0;
             const lodging = parseFloat(document.getElementById('lodgingReimbursement').value) || 0;
             const other = parseFloat(document.getElementById('otherExpenses').value) || 0;
-            
             return travel + meal + lodging + other;
         }
         
@@ -939,7 +869,6 @@
                 return;
             }
             
-            // Validate acknowledgment
             if (!document.getElementById('acknowledge').checked) {
                 showAlert('warning', 'Please acknowledge that all information is correct.');
                 return;
@@ -949,19 +878,22 @@
             hideAllAlerts();
             
             try {
-                // Collect form data
                 const formData = collectFormData();
                 
-                // Submit to Google Sheets
-                await submitToGoogleSheets(formData);
+                // Submit to Google Sheets via Web App
+                if (!USE_MOCK_DATA) {
+                    await submitToWebApp(formData);
+                } else {
+                    console.log('Mock mode: Would submit to Web App:', formData);
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+                }
                 
-                // Send email notification
-                await sendEmailNotification(formData);
+                // Send email notifications
+                await sendEmailNotifications(formData);
                 
                 document.getElementById('loadingSubmit').style.display = 'none';
-                showAlert('success', 'Time entry submitted successfully! You will receive a confirmation email shortly.');
+                showAlert('success', 'Time entry submitted successfully! You will receive a confirmation email shortly at ' + formData.vendorEmail);
                 
-                // Reset form after 3 seconds
                 setTimeout(() => {
                     document.getElementById('timeEntryForm').reset();
                     document.getElementById('eventDate').valueAsDate = new Date();
@@ -980,7 +912,6 @@
             const form = document.getElementById('timeEntryForm');
             const formData = new FormData(form);
             
-            // Calculate payment details
             let basePay = 0;
             let overtimePay = 0;
             let details = '';
@@ -1010,107 +941,57 @@
             const totalPay = basePay + overtimePay + reimbursements;
             
             return {
-                // Vendor Info
                 vendorId: currentVendor.id,
                 vendorName: `${currentVendor.firstName} ${currentVendor.lastName}`,
                 vendorEmail: currentVendor.email,
                 payType: currentVendor.payType,
-                
-                // Event Info
                 eventDate: formData.get('eventDate'),
                 eventName: formData.get('eventName'),
                 eventLocation: formData.get('eventLocation'),
                 rolePerformed: formData.get('rolePerformed'),
-                
-                // Time/Work Details
                 workDetails: details,
                 clockIn: formData.get('clockIn') || 'N/A',
                 clockOut: formData.get('clockOut') || 'N/A',
                 breakMinutes: formData.get('breakMinutes') || '0',
                 dayType: formData.get('dayType') || 'N/A',
                 routineCount: formData.get('routineCount') || '0',
-                
-                // Expenses
                 travelReimbursement: formData.get('travelReimbursement') || '0',
                 mealAllowance: formData.get('mealAllowance') || '0',
                 lodgingReimbursement: formData.get('lodgingReimbursement') || '0',
                 otherExpenses: formData.get('otherExpenses') || '0',
                 expenseNotes: formData.get('expenseNotes') || '',
-                
-                // Payment Calculation
                 basePay: basePay.toFixed(2),
                 overtimePay: overtimePay.toFixed(2),
                 reimbursements: reimbursements.toFixed(2),
                 totalPay: totalPay.toFixed(2),
-                
-                // Notes
                 additionalNotes: formData.get('additionalNotes') || '',
-                
-                // Submission Info
                 submissionDate: new Date().toISOString(),
                 status: 'Pending Review'
             };
         }
         
-       async function submitToGoogleSheets(data) {
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Time_Entries:append?valueInputOption=USER_ENTERED&key=${GOOGLE_API_KEY}`;
-    
-    const row = [
-        `SUB${Date.now()}`, // Entry ID
-        data.submissionDate,
-        data.vendorId,
-        data.vendorName,
-        data.vendorEmail,
-        data.payType,
-        data.eventDate,
-        data.eventName,
-        data.eventLocation,
-        data.rolePerformed,
-        data.workDetails,
-        data.clockIn,
-        data.clockOut,
-        data.breakMinutes,
-        data.dayType,
-        data.routineCount,
-        data.basePay,
-        data.overtimePay,
-        data.travelReimbursement,
-        data.mealAllowance,
-        data.lodgingReimbursement,
-        data.otherExpenses,
-        data.expenseNotes,
-        data.totalPay,
-        data.status,
-        '', // Approved By
-        '', // Approval Date
-        '', // Payment Date
-        '', // Payment Method
-        '', // Check Number
-        data.additionalNotes
-    ];
-    
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            values: [row]
-        })
-    });
-    
-    if (!response.ok) {
-        throw new Error('Failed to submit to Google Sheets');
-    }
-}
-        
-        async function sendEmailNotification(data) {
-            if (EMAILJS_PUBLIC_KEY === 'YOUR_EMAILJS_PUBLIC_KEY') {
-                console.log('EmailJS not configured, skipping email');
-                return;
+        async function submitToWebApp(data) {
+            const response = await fetch(WEBAPP_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'submitTimeEntry',
+                    data: data
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to submit to Google Sheets');
             }
             
-            const emailContent = `
+            return await response.json();
+        }
+        
+        async function sendEmailNotifications(data) {
+            // Email to office
+            const officeEmailContent = `
 WCTE TIME ENTRY SUBMISSION
 =========================
 
@@ -1149,15 +1030,31 @@ STATUS: ${data.status}
 Submitted: ${new Date(data.submissionDate).toLocaleString()}
             `;
             
-            const templateParams = {
-                from_name: data.vendorName,
-                from_email: data.vendorEmail,
-                subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
-                message: emailContent,
-                reply_to: data.vendorEmail
-            };
+            // Send to office
+            await emailjs.send(
+                EMAILJS_SERVICE_ID,
+                EMAILJS_TEMPLATE_OFFICE,
+                {
+                    from_name: data.vendorName,
+                    from_email: data.vendorEmail,
+                    subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
+                    message: officeEmailContent,
+                    to_email: 'office@wctedance.com'
+                }
+            );
             
-            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+            // Send confirmation to vendor
+            await emailjs.send(
+                EMAILJS_SERVICE_ID,
+                EMAILJS_TEMPLATE_CONFIRMATION,
+                {
+                    to_email: data.vendorEmail,
+                    vendor_name: data.vendorName,
+                    event_name: data.eventName,
+                    event_date: data.eventDate,
+                    total_amount: data.totalPay
+                }
+            );
         }
         
         // ========================================
