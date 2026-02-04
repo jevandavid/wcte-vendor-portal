@@ -657,16 +657,35 @@
         // VENDOR LOADING
         // ========================================
         async function loadVendors() {
-            try {
-                // TODO: Replace with actual Google Sheets API call
-                // For now, use mock data
-                vendorsList = MOCK_VENDORS;
-                console.log('Vendors loaded:', vendorsList.length);
-            } catch (error) {
-                console.error('Error loading vendors:', error);
-                showAlert('error', 'Failed to load vendor data. Please refresh the page.');
-            }
-        }
+    try {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Vendors!A2:R?key=${GOOGLE_API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        vendorsList = data.values.map(row => ({
+            id: row[0],
+            firstName: row[1],
+            lastName: row[2],
+            email: row[3],
+            phone: row[4],
+            payType: row[5],
+            hourlyRate: parseFloat(row[6]) || 0,
+            fullDayRate: parseFloat(row[7]) || 0,
+            halfDayRate: parseFloat(row[8]) || 0,
+            perRoutineRate: parseFloat(row[9]) || 0,
+            fixedAmount: parseFloat(row[10]) || 0,
+            overtimeEligible: row[11] === 'TRUE',
+            overtimeThreshold: parseFloat(row[12]) || 10,
+            overtimeMultiplier: parseFloat(row[13]) || 1.5,
+            active: row[14] === 'TRUE'
+        })).filter(v => v.active);
+        
+        console.log('Vendors loaded:', vendorsList.length);
+    } catch (error) {
+        console.error('Error loading vendors:', error);
+        showAlert('error', 'Failed to load vendor data. Please refresh the page.');
+    }
+}
         
         // ========================================
         // LOGIN FUNCTIONALITY
@@ -1033,16 +1052,57 @@
             };
         }
         
-        async function submitToGoogleSheets(data) {
-            // TODO: Implement Google Sheets API submission
-            console.log('Submitting to Google Sheets:', data);
-            
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // In production, this would be:
-            // await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Time_Entries:append...`)
-        }
+       async function submitToGoogleSheets(data) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEET_ID}/values/Time_Entries:append?valueInputOption=USER_ENTERED&key=${GOOGLE_API_KEY}`;
+    
+    const row = [
+        `SUB${Date.now()}`, // Entry ID
+        data.submissionDate,
+        data.vendorId,
+        data.vendorName,
+        data.vendorEmail,
+        data.payType,
+        data.eventDate,
+        data.eventName,
+        data.eventLocation,
+        data.rolePerformed,
+        data.workDetails,
+        data.clockIn,
+        data.clockOut,
+        data.breakMinutes,
+        data.dayType,
+        data.routineCount,
+        data.basePay,
+        data.overtimePay,
+        data.travelReimbursement,
+        data.mealAllowance,
+        data.lodgingReimbursement,
+        data.otherExpenses,
+        data.expenseNotes,
+        data.totalPay,
+        data.status,
+        '', // Approved By
+        '', // Approval Date
+        '', // Payment Date
+        '', // Payment Method
+        '', // Check Number
+        data.additionalNotes
+    ];
+    
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            values: [row]
+        })
+    });
+    
+    if (!response.ok) {
+        throw new Error('Failed to submit to Google Sheets');
+    }
+}
         
         async function sendEmailNotification(data) {
             if (EMAILJS_PUBLIC_KEY === 'YOUR_EMAILJS_PUBLIC_KEY') {
