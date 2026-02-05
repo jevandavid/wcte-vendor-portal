@@ -122,12 +122,6 @@
             gap: 15px;
         }
         
-        .three-col {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-        }
-        
         .btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -146,10 +140,6 @@
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
-        .btn:active {
-            transform: translateY(0);
-        }
-        
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -159,10 +149,6 @@
         .btn-secondary {
             background: #6c757d;
             margin-left: 10px;
-        }
-        
-        .btn-secondary:hover {
-            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
         }
         
         .info-box {
@@ -176,10 +162,6 @@
         .info-box p {
             margin: 5px 0;
             color: #0d47a1;
-        }
-        
-        .info-box strong {
-            color: #01579b;
         }
         
         .calculation-box {
@@ -272,8 +254,7 @@
         }
         
         @media (max-width: 768px) {
-            .two-col,
-            .three-col {
+            .two-col {
                 grid-template-columns: 1fr;
             }
             
@@ -300,12 +281,10 @@
         </div>
         
         <div class="body">
-            <!-- Alert Messages -->
             <div id="alertSuccess" class="alert alert-success"></div>
             <div id="alertError" class="alert alert-error"></div>
             <div id="alertWarning" class="alert alert-warning"></div>
             
-            <!-- SECTION 1: Login / Vendor Selection -->
             <div id="sectionLogin" class="section active">
                 <div class="section-header">Vendor Login</div>
                 
@@ -328,11 +307,9 @@
                 </div>
             </div>
             
-            <!-- SECTION 2: Time Entry Form -->
             <div id="sectionTimeEntry" class="section">
                 <div class="section-header">Time Entry Form</div>
                 
-                <!-- Vendor Info Display -->
                 <div id="vendorInfo" class="info-box">
                     <p><strong>Vendor:</strong> <span id="displayName"></span></p>
                     <p><strong>Pay Structure:</strong> <span id="displayPayType"></span></p>
@@ -340,7 +317,6 @@
                 </div>
                 
                 <form id="timeEntryForm">
-                    <!-- Event Information -->
                     <div class="section-header">Event Information</div>
                     
                     <div class="form-group">
@@ -374,18 +350,17 @@
                         </div>
                     </div>
                     
-                    <!-- HOURLY TIME ENTRY FIELDS -->
                     <div id="hourlyFields" class="time-entry-fields">
                         <div class="section-header">Time Worked</div>
                         
                         <div class="two-col">
                             <div class="form-group">
-                                <label for="clockIn">Clock In Time <span class="required">*</span></label>
+                                <label for="clockIn">Clock In Time</label>
                                 <input type="time" id="clockIn" name="clockIn">
                             </div>
                             
                             <div class="form-group">
-                                <label for="clockOut">Clock Out Time <span class="required">*</span></label>
+                                <label for="clockOut">Clock Out Time</label>
                                 <input type="time" id="clockOut" name="clockOut">
                             </div>
                         </div>
@@ -393,22 +368,19 @@
                         <div class="form-group">
                             <label for="breakMinutes">Break Time (minutes)</label>
                             <input type="number" id="breakMinutes" name="breakMinutes" value="0" min="0">
-                            <p class="helper-text">Total unpaid break time in minutes</p>
                         </div>
                         
                         <div class="form-group">
                             <label for="hoursWorked">Total Hours Worked</label>
                             <input type="text" id="hoursWorked" readonly style="background: #f8f9fa; font-weight: 600;">
-                            <p class="helper-text">Auto-calculated (includes break deduction)</p>
                         </div>
                     </div>
                     
-                    <!-- DAILY RATE FIELDS -->
                     <div id="dailyFields" class="time-entry-fields">
                         <div class="section-header">Daily Rate</div>
                         
                         <div class="form-group">
-                            <label for="dayType">Day Type <span class="required">*</span></label>
+                            <label for="dayType">Day Type</label>
                             <select id="dayType" name="dayType">
                                 <option value="">Select Type</option>
                                 <option value="full">Full Day</option>
@@ -417,18 +389,15 @@
                         </div>
                     </div>
                     
-                    <!-- PER-ROUTINE FIELDS -->
                     <div id="routineFields" class="time-entry-fields">
                         <div class="section-header">Routine Count</div>
                         
                         <div class="form-group">
-                            <label for="routineCount">Number of Routines <span class="required">*</span></label>
+                            <label for="routineCount">Number of Routines</label>
                             <input type="number" id="routineCount" name="routineCount" min="0" step="1">
-                            <p class="helper-text">Total number of routines judged/performed</p>
                         </div>
                     </div>
                     
-                    <!-- FIXED AMOUNT FIELDS -->
                     <div id="fixedFields" class="time-entry-fields">
                         <div class="section-header">Fixed Payment</div>
                         
@@ -439,13 +408,12 @@
                         
                         <div class="form-group">
                             <label>
-                                <input type="checkbox" id="confirmFixed" name="confirmFixed" required>
+                                <input type="checkbox" id="confirmFixed" name="confirmFixed">
                                 I confirm my attendance and work for this event
                             </label>
                         </div>
                     </div>
                     
-                    <!-- ADDITIONAL COMPENSATION -->
                     <div class="section-header">Additional Compensation & Expenses</div>
                     
                     <div class="two-col">
@@ -474,17 +442,15 @@
                     
                     <div class="form-group">
                         <label for="expenseNotes">Expense Notes/Receipts</label>
-                        <textarea id="expenseNotes" name="expenseNotes" placeholder="Describe any expenses and attach receipts if needed"></textarea>
+                        <textarea id="expenseNotes" name="expenseNotes"></textarea>
                     </div>
                     
-                    <!-- NOTES -->
                     <div class="form-group">
                         <label for="additionalNotes">Additional Notes</label>
-                        <textarea id="additionalNotes" name="additionalNotes" placeholder="Any additional information or special circumstances"></textarea>
+                        <textarea id="additionalNotes" name="additionalNotes"></textarea>
                     </div>
                     
-                    <!-- CALCULATION DISPLAY -->
-                    <div class="calculation-box" id="calculationBox">
+                    <div class="calculation-box">
                         <h3 style="margin-bottom: 15px; color: #667eea;">Payment Calculation</h3>
                         
                         <div class="calculation-row">
@@ -508,10 +474,9 @@
                         </div>
                     </div>
                     
-                    <!-- ACKNOWLEDGMENT -->
                     <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
                         <p style="color: #856404;"><strong>Acknowledgment:</strong></p>
-                        <p style="color: #856404;">By submitting this form, I certify that all information provided is accurate and truthful. I understand that this submission serves as my official time entry for payment processing.</p>
+                        <p style="color: #856404;">By submitting this form, I certify that all information provided is accurate and truthful.</p>
                         <div style="margin-top: 15px;">
                             <label>
                                 <input type="checkbox" id="acknowledge" name="acknowledge" required>
@@ -522,7 +487,7 @@
                     
                     <div style="text-align: center; margin-top: 30px;">
                         <button type="button" class="btn btn-secondary" onclick="logout()">Back to Login</button>
-                        <button type="submit" class="btn" id="submitBtn">Submit Time Entry</button>
+                        <button type="submit" class="btn">Submit Time Entry</button>
                     </div>
                 </form>
                 
@@ -535,172 +500,77 @@
     </div>
     
     <script>
-        // ========================================
-        // PRODUCTION CONFIGURATION
-        // ========================================
-        
-        // EmailJS Configuration (PRODUCTION - YOUR ACTUAL CREDENTIALS)
-        const EMAILJS_PUBLIC_KEY = '3hfbTN_SU-93VXhYt';
-        const EMAILJS_SERVICE_ID = 'service_o8fi71j';
-        const EMAILJS_TEMPLATE_OFFICE = 'template_1tfz67w'; // Office notification
-        const EMAILJS_TEMPLATE_CONFIRMATION = 'template_x7fzk5a'; // Vendor confirmation
-        
-        // Google Sheets Configuration (PRODUCTION)
-        const GOOGLE_SHEET_ID = '1JrFlCWmTVYkJME8CQYpwEG9WFWU3Ei-GFmv6hdTlRsg';
-        
-        // Google Apps Script Web App URL - YOU NEED TO SET THIS UP
-        // See SETUP_GUIDE.md for instructions on creating the Web App
-        let WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz9L9HpPFYqFUeLvJeZ4MmeALiiE4zPdIRcKLAGWPyh8-YvFJz8V43aJ2Nh-4VWYKyt/exec';
-        
-        // TEMPORARY: Using mock data until Web App is deployed
-        const USE_MOCK_DATA = false; // Set to false once Web App is deployed
-        
-        // Initialize EmailJS
-        emailjs.init(EMAILJS_PUBLIC_KEY);
-        
-        // ========================================
-        // GLOBAL STATE
-        // ========================================
-        let currentVendor = null;
-        let vendorsList = [];
-        
-        // ========================================
-        // MOCK VENDOR DATA (Remove after Web App setup)
-        // ========================================
-        const MOCK_VENDORS = [
-            {
-                id: 'V001',
-                email: 'judge1@example.com',
-                firstName: 'Sarah',
-                lastName: 'Johnson',
-                payType: 'hourly',
-                hourlyRate: 35,
-                overtimeEligible: true,
-                overtimeThreshold: 10,
-                overtimeMultiplier: 1.5
-            },
-            {
-                id: 'V002',
-                email: 'choreographer@example.com',
-                firstName: 'Michael',
-                lastName: 'Chen',
-                payType: 'hourly',
-                hourlyRate: 20,
-                overtimeEligible: true,
-                overtimeThreshold: 10,
-                overtimeMultiplier: 1.5
-            },
-            {
-                id: 'V003',
-                email: 'instructor@example.com',
-                firstName: 'Emily',
-                lastName: 'Rodriguez',
-                payType: 'daily',
-                fullDayRate: 400,
-                halfDayRate: 200
-            },
-            {
-                id: 'V004',
-                email: 'judge2@example.com',
-                firstName: 'David',
-                lastName: 'Williams',
-                payType: 'routine',
-                perRoutineRate: 2
-            },
-            {
-                id: 'V005',
-                email: 'adjudicator@example.com',
-                firstName: 'Jessica',
-                lastName: 'Martinez',
-                payType: 'fixed',
-                fixedAmount: 500
-            }
-        ];
-        
-        // ========================================
-        // INITIALIZATION
-        // ========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('eventDate').valueAsDate = new Date();
-            setupCalculationListeners();
-            loadVendors();
-        });
-        
-        // ========================================
-        // VENDOR LOADING
-        // ========================================
-        async function loadVendors() {
-            try {
-                if (USE_MOCK_DATA) {
-                    // Using mock data for testing
-                    vendorsList = MOCK_VENDORS;
-                    console.log('Using mock vendor data:', vendorsList.length, 'vendors');
-                } else {
-                    // Load from Google Apps Script Web App
-                    const response = await fetch(`${WEBAPP_URL}?action=getVendors`);
-                    const data = await response.json();
-                    vendorsList = data.vendors;
-                    console.log('Vendors loaded from Web App:', vendorsList.length);
-                }
-            } catch (error) {
-                console.error('Error loading vendors:', error);
-                showAlert('error', 'Failed to load vendor data. Please refresh the page or contact office@wctedance.com');
-            }
-        }
-        
-        // ========================================
-        // LOGIN FUNCTIONALITY
-        // ========================================
-        async function loginVendor() {
-            const email = document.getElementById('vendorEmail').value.trim().toLowerCase();
-            
-            if (!email) {
-                showAlert('warning', 'Please enter your email address.');
-                return;
-            }
-            
-            document.getElementById('loadingLogin').style.display = 'block';
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const vendor = vendorsList.find(v => v.email.toLowerCase() === email);
-            
-            document.getElementById('loadingLogin').style.display = 'none';
-            
-            if (vendor) {
-                currentVendor = vendor;
-                showTimeEntryForm();
-            } else {
-                showAlert('error', 'Email not found. Please contact office@wctedance.com if you believe this is an error.');
-            }
-        }
-        
-        function logout() {
-            currentVendor = null;
-            document.getElementById('timeEntryForm').reset();
-            document.getElementById('eventDate').valueAsDate = new Date();
-            hideAllAlerts();
-            showSection('sectionLogin');
-        }
-        
-        // ========================================
-        // FORM DISPLAY LOGIC
-        // ========================================
-        function showTimeEntryForm() {
+const EMAILJS_PUBLIC_KEY = '3hfbTN_SU-93VXhYt';
+const EMAILJS_SERVICE_ID = 'service_o8fi71j';
+const EMAILJS_TEMPLATE_OFFICE = 'template_1tfz67w';
+const EMAILJS_TEMPLATE_CONFIRMATION = 'template_x7fzk5a';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz9L9HpPFYqFUeLvJeZ4MmeALiiE4zPdIRcKLAGWPyh8-YvFJz8V43aJ2Nh-4VWYKyt/exec';
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+let currentVendor = null;
+let vendorsList = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('eventDate').valueAsDate = new Date();
+    setupCalculationListeners();
+    loadVendors();
+});
+
+async function loadVendors() {
+    try {
+        const response = await fetch(`${WEBAPP_URL}?action=getVendors`);
+        const data = await response.json();
+        vendorsList = data.vendors;
+        console.log('Vendors loaded:', vendorsList.length);
+    } catch (error) {
+        console.error('Error loading vendors:', error);
+        showAlert('error', 'Failed to load vendor data. Please refresh or contact office@wctedance.com');
+    }
+}
+
+async function loginVendor() {
+    const email = document.getElementById('vendorEmail').value.trim().toLowerCase();
+    if (!email) {
+        showAlert('warning', 'Please enter your email address.');
+        return;
+    }
+    
+    document.getElementById('loadingLogin').style.display = 'block';
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const vendor = vendorsList.find(v => v.email.toLowerCase() === email);
+    document.getElementById('loadingLogin').style.display = 'none';
+    
+    if (vendor) {
+        currentVendor = vendor;
+        showTimeEntryForm();
+    } else {
+        showAlert('error', 'Email not found. Please contact office@wctedance.com');
+    }
+}
+
+function logout() {
+    currentVendor = null;
+    document.getElementById('timeEntryForm').reset();
+    document.getElementById('eventDate').valueAsDate = new Date();
+    hideAllAlerts();
+    showSection('sectionLogin');
+}
+
+function showTimeEntryForm() {
     document.getElementById('displayName').textContent = `${currentVendor.firstName} ${currentVendor.lastName}`;
     document.getElementById('displayPayType').textContent = getPayTypeDisplay(currentVendor.payType);
     document.getElementById('displayRate').textContent = getRateDisplay(currentVendor);
     
     hideAllTimeEntryFields();
     
-    // Remove all conditional required attributes first
     document.getElementById('clockIn').required = false;
     document.getElementById('clockOut').required = false;
     document.getElementById('dayType').required = false;
     document.getElementById('routineCount').required = false;
     document.getElementById('confirmFixed').required = false;
     
-    // Show appropriate fields and set required
     switch(currentVendor.payType) {
         case 'hourly':
             document.getElementById('hourlyFields').classList.add('show');
@@ -725,387 +595,277 @@
     showSection('sectionTimeEntry');
     calculatePayment();
 }
-        
-        function hideAllTimeEntryFields() {
-            document.querySelectorAll('.time-entry-fields').forEach(el => {
-                el.classList.remove('show');
-            });
-        }
-        
-        function getPayTypeDisplay(type) {
-            const types = {
-                'hourly': 'Hourly Rate',
-                'daily': 'Daily Rate',
-                'routine': 'Per-Routine',
-                'fixed': 'Fixed Amount'
-            };
-            return types[type] || type;
-        }
-        
-        function getRateDisplay(vendor) {
-            switch(vendor.payType) {
-                case 'hourly':
-                    return `$${vendor.hourlyRate}/hr${vendor.overtimeEligible ? ' (OT after ' + vendor.overtimeThreshold + ' hrs)' : ''}`;
-                case 'daily':
-                    return `Full: $${vendor.fullDayRate} | Half: $${vendor.halfDayRate}`;
-                case 'routine':
-                    return `$${vendor.perRoutineRate}/routine`;
-                case 'fixed':
-                    return `$${vendor.fixedAmount} per event`;
-                default:
-                    return 'N/A';
-            }
-        }
-        
-        // ========================================
-        // CALCULATION LOGIC
-        // ========================================
-        function setupCalculationListeners() {
-            document.getElementById('clockIn')?.addEventListener('change', calculatePayment);
-            document.getElementById('clockOut')?.addEventListener('change', calculatePayment);
-            document.getElementById('breakMinutes')?.addEventListener('input', calculatePayment);
-            document.getElementById('dayType')?.addEventListener('change', calculatePayment);
-            document.getElementById('routineCount')?.addEventListener('input', calculatePayment);
-            document.getElementById('travelReimbursement')?.addEventListener('input', calculatePayment);
-            document.getElementById('mealAllowance')?.addEventListener('input', calculatePayment);
-            document.getElementById('lodgingReimbursement')?.addEventListener('input', calculatePayment);
-            document.getElementById('otherExpenses')?.addEventListener('input', calculatePayment);
-        }
-        
-        function calculatePayment() {
-            if (!currentVendor) return;
-            
-            let basePay = 0;
-            let overtimePay = 0;
-            let regularHours = 0;
-            let overtimeHours = 0;
-            
-            switch(currentVendor.payType) {
-                case 'hourly':
-                    const result = calculateHourlyPay();
-                    basePay = result.basePay;
-                    overtimePay = result.overtimePay;
-                    regularHours = result.regularHours;
-                    overtimeHours = result.overtimeHours;
-                    document.getElementById('hoursWorked').value = (regularHours + overtimeHours).toFixed(2) + ' hours';
-                    break;
-                case 'daily':
-                    basePay = calculateDailyPay();
-                    break;
-                case 'routine':
-                    basePay = calculateRoutinePay();
-                    break;
-                case 'fixed':
-                    basePay = currentVendor.fixedAmount;
-                    break;
-            }
-            
-            const reimbursements = calculateReimbursements();
-            
-            document.getElementById('calcBasePay').textContent = `$${basePay.toFixed(2)}`;
-            
-            if (overtimePay > 0) {
-                document.getElementById('calcOvertimeRow').style.display = 'flex';
-                document.getElementById('calcOvertimePay').textContent = `$${overtimePay.toFixed(2)}`;
-            } else {
-                document.getElementById('calcOvertimeRow').style.display = 'none';
-            }
-            
-            document.getElementById('calcReimbursements').textContent = `$${reimbursements.toFixed(2)}`;
-            document.getElementById('calcTotal').textContent = `$${(basePay + overtimePay + reimbursements).toFixed(2)}`;
-        }
-        
-        function calculateHourlyPay() {
-            const clockIn = document.getElementById('clockIn').value;
-            const clockOut = document.getElementById('clockOut').value;
-            const breakMinutes = parseFloat(document.getElementById('breakMinutes').value) || 0;
-            
-            if (!clockIn || !clockOut) {
-                return { basePay: 0, overtimePay: 0, regularHours: 0, overtimeHours: 0 };
-            }
-            
-            const start = new Date(`2000-01-01T${clockIn}`);
-            const end = new Date(`2000-01-01T${clockOut}`);
-            let totalMinutes = (end - start) / (1000 * 60);
-            
-            if (totalMinutes < 0) totalMinutes += 24 * 60;
-            
-            totalMinutes -= breakMinutes;
-            const totalHours = Math.max(0, totalMinutes / 60);
-            
-            let regularHours = totalHours;
-            let overtimeHours = 0;
-            let basePay = 0;
-            let overtimePay = 0;
-            
-            if (currentVendor.overtimeEligible && totalHours > currentVendor.overtimeThreshold) {
-                regularHours = currentVendor.overtimeThreshold;
-                overtimeHours = totalHours - currentVendor.overtimeThreshold;
-                basePay = regularHours * currentVendor.hourlyRate;
-                overtimePay = overtimeHours * currentVendor.hourlyRate * currentVendor.overtimeMultiplier;
-            } else {
-                basePay = totalHours * currentVendor.hourlyRate;
-            }
-            
-            return { basePay, overtimePay, regularHours, overtimeHours };
-        }
-        
-        function calculateDailyPay() {
-            const dayType = document.getElementById('dayType').value;
-            if (dayType === 'full') return currentVendor.fullDayRate;
-            if (dayType === 'half') return currentVendor.halfDayRate;
-            return 0;
-        }
-        
-        function calculateRoutinePay() {
-            const routineCount = parseFloat(document.getElementById('routineCount').value) || 0;
-            return routineCount * currentVendor.perRoutineRate;
-        }
-        
-        function calculateReimbursements() {
-            const travel = parseFloat(document.getElementById('travelReimbursement').value) || 0;
-            const meal = parseFloat(document.getElementById('mealAllowance').value) || 0;
-            const lodging = parseFloat(document.getElementById('lodgingReimbursement').value) || 0;
-            const other = parseFloat(document.getElementById('otherExpenses').value) || 0;
-            return travel + meal + lodging + other;
-        }
-        
-        // ========================================
-        // FORM SUBMISSION
-        // ========================================
-        document.getElementById('timeEntryForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!currentVendor) {
-                showAlert('error', 'Session expired. Please log in again.');
-                logout();
-                return;
-            }
-            
-            if (!document.getElementById('acknowledge').checked) {
-                showAlert('warning', 'Please acknowledge that all information is correct.');
-                return;
-            }
-            
-            document.getElementById('loadingSubmit').style.display = 'block';
-            hideAllAlerts();
-            
-            try {
-                const formData = collectFormData();
-                
-                // Submit to Google Sheets via Web App
-                if (!USE_MOCK_DATA) {
-                    await submitToWebApp(formData);
-                } else {
-                    console.log('Mock mode: Would submit to Web App:', formData);
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-                }
-                
-                // Send email notifications
-                await sendEmailNotifications(formData);
-                
-                document.getElementById('loadingSubmit').style.display = 'none';
-                showAlert('success', 'Time entry submitted successfully! You will receive a confirmation email shortly at ' + formData.vendorEmail);
-                
-                setTimeout(() => {
-                    document.getElementById('timeEntryForm').reset();
-                    document.getElementById('eventDate').valueAsDate = new Date();
-                    calculatePayment();
-                    document.getElementById('alertSuccess').classList.remove('show');
-                }, 3000);
-                
-            } catch (error) {
-                document.getElementById('loadingSubmit').style.display = 'none';
-                console.error('Submission error:', error);
-                showAlert('error', 'Failed to submit time entry. Please try again or contact office@wctedance.com');
-            }
-        });
-        
-        function collectFormData() {
-            const form = document.getElementById('timeEntryForm');
-            const formData = new FormData(form);
-            
-            let basePay = 0;
-            let overtimePay = 0;
-            let details = '';
-            
-            switch(currentVendor.payType) {
-                case 'hourly':
-                    const hourlyResult = calculateHourlyPay();
-                    basePay = hourlyResult.basePay;
-                    overtimePay = hourlyResult.overtimePay;
-                    details = `Hours: ${(hourlyResult.regularHours + hourlyResult.overtimeHours).toFixed(2)} (Regular: ${hourlyResult.regularHours.toFixed(2)}, OT: ${hourlyResult.overtimeHours.toFixed(2)})`;
-                    break;
-                case 'daily':
-                    basePay = calculateDailyPay();
-                    details = `Day Type: ${formData.get('dayType')}`;
-                    break;
-                case 'routine':
-                    basePay = calculateRoutinePay();
-                    details = `Routines: ${formData.get('routineCount')}`;
-                    break;
-                case 'fixed':
-                    basePay = currentVendor.fixedAmount;
-                    details = 'Fixed Amount';
-                    break;
-            }
-            
-            const reimbursements = calculateReimbursements();
-            const totalPay = basePay + overtimePay + reimbursements;
-            
-            return {
-                vendorId: currentVendor.id,
-                vendorName: `${currentVendor.firstName} ${currentVendor.lastName}`,
-                vendorEmail: currentVendor.email,
-                payType: currentVendor.payType,
-                eventDate: formData.get('eventDate'),
-                eventName: formData.get('eventName'),
-                eventLocation: formData.get('eventLocation'),
-                rolePerformed: formData.get('rolePerformed'),
-                workDetails: details,
-                clockIn: formData.get('clockIn') || 'N/A',
-                clockOut: formData.get('clockOut') || 'N/A',
-                breakMinutes: formData.get('breakMinutes') || '0',
-                dayType: formData.get('dayType') || 'N/A',
-                routineCount: formData.get('routineCount') || '0',
-                travelReimbursement: formData.get('travelReimbursement') || '0',
-                mealAllowance: formData.get('mealAllowance') || '0',
-                lodgingReimbursement: formData.get('lodgingReimbursement') || '0',
-                otherExpenses: formData.get('otherExpenses') || '0',
-                expenseNotes: formData.get('expenseNotes') || '',
-                basePay: basePay.toFixed(2),
-                overtimePay: overtimePay.toFixed(2),
-                reimbursements: reimbursements.toFixed(2),
-                totalPay: totalPay.toFixed(2),
-                additionalNotes: formData.get('additionalNotes') || '',
-                submissionDate: new Date().toISOString(),
-                status: 'Pending Review'
-            };
-      async function submitToWebApp(data) {
-    const response = await fetch(WEBAPP_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/plain',  // Changed from 'application/json'
-        },
-        body: JSON.stringify({
-            action: 'submitTimeEntry',
-            data: data
-        })
+
+function hideAllTimeEntryFields() {
+    document.querySelectorAll('.time-entry-fields').forEach(el => {
+        el.classList.remove('show');
     });
+}
+
+function getPayTypeDisplay(type) {
+    const types = {'hourly': 'Hourly Rate', 'daily': 'Daily Rate', 'routine': 'Per-Routine', 'fixed': 'Fixed Amount'};
+    return types[type] || type;
+}
+
+function getRateDisplay(vendor) {
+    switch(vendor.payType) {
+        case 'hourly':
+            return `$${vendor.hourlyRate}/hr${vendor.overtimeEligible ? ' (OT after ' + vendor.overtimeThreshold + ' hrs)' : ''}`;
+        case 'daily':
+            return `Full: $${vendor.fullDayRate} | Half: $${vendor.halfDayRate}`;
+        case 'routine':
+            return `$${vendor.perRoutineRate}/routine`;
+        case 'fixed':
+            return `$${vendor.fixedAmount} per event`;
+        default:
+            return 'N/A';
+    }
+}
+
+function setupCalculationListeners() {
+    ['clockIn', 'clockOut', 'breakMinutes', 'dayType', 'routineCount', 'travelReimbursement', 'mealAllowance', 'lodgingReimbursement', 'otherExpenses'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener(el.type === 'number' ? 'input' : 'change', calculatePayment);
+    });
+}
+
+function calculatePayment() {
+    if (!currentVendor) return;
     
-    if (!response.ok) {
-        throw new Error('Failed to submit to Google Sheets');
+    let basePay = 0, overtimePay = 0;
+    
+    switch(currentVendor.payType) {
+        case 'hourly':
+            const result = calculateHourlyPay();
+            basePay = result.basePay;
+            overtimePay = result.overtimePay;
+            document.getElementById('hoursWorked').value = (result.regularHours + result.overtimeHours).toFixed(2) + ' hours';
+            break;
+        case 'daily':
+            basePay = calculateDailyPay();
+            break;
+        case 'routine':
+            basePay = calculateRoutinePay();
+            break;
+        case 'fixed':
+            basePay = currentVendor.fixedAmount;
+            break;
     }
     
+    const reimbursements = calculateReimbursements();
+    
+    document.getElementById('calcBasePay').textContent = `$${basePay.toFixed(2)}`;
+    
+    if (overtimePay > 0) {
+        document.getElementById('calcOvertimeRow').style.display = 'flex';
+        document.getElementById('calcOvertimePay').textContent = `$${overtimePay.toFixed(2)}`;
+    } else {
+        document.getElementById('calcOvertimeRow').style.display = 'none';
+    }
+    
+    document.getElementById('calcReimbursements').textContent = `$${reimbursements.toFixed(2)}`;
+    document.getElementById('calcTotal').textContent = `$${(basePay + overtimePay + reimbursements).toFixed(2)}`;
+}
+
+function calculateHourlyPay() {
+    const clockIn = document.getElementById('clockIn').value;
+    const clockOut = document.getElementById('clockOut').value;
+    const breakMinutes = parseFloat(document.getElementById('breakMinutes').value) || 0;
+    
+    if (!clockIn || !clockOut) return { basePay: 0, overtimePay: 0, regularHours: 0, overtimeHours: 0 };
+    
+    const start = new Date(`2000-01-01T${clockIn}`);
+    const end = new Date(`2000-01-01T${clockOut}`);
+    let totalMinutes = (end - start) / (1000 * 60);
+    if (totalMinutes < 0) totalMinutes += 24 * 60;
+    totalMinutes -= breakMinutes;
+    const totalHours = Math.max(0, totalMinutes / 60);
+    
+    let regularHours = totalHours, overtimeHours = 0, basePay = 0, overtimePay = 0;
+    
+    if (currentVendor.overtimeEligible && totalHours > currentVendor.overtimeThreshold) {
+        regularHours = currentVendor.overtimeThreshold;
+        overtimeHours = totalHours - currentVendor.overtimeThreshold;
+        basePay = regularHours * currentVendor.hourlyRate;
+        overtimePay = overtimeHours * currentVendor.hourlyRate * currentVendor.overtimeMultiplier;
+    } else {
+        basePay = totalHours * currentVendor.hourlyRate;
+    }
+    
+    return { basePay, overtimePay, regularHours, overtimeHours };
+}
+
+function calculateDailyPay() {
+    const dayType = document.getElementById('dayType').value;
+    return dayType === 'full' ? currentVendor.fullDayRate : dayType === 'half' ? currentVendor.halfDayRate : 0;
+}
+
+function calculateRoutinePay() {
+    const routineCount = parseFloat(document.getElementById('routineCount').value) || 0;
+    return routineCount * currentVendor.perRoutineRate;
+}
+
+function calculateReimbursements() {
+    return ['travelReimbursement', 'mealAllowance', 'lodgingReimbursement', 'otherExpenses']
+        .reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);
+}
+
+document.getElementById('timeEntryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    if (!currentVendor) {
+        showAlert('error', 'Session expired. Please log in again.');
+        logout();
+        return;
+    }
+    
+    if (!document.getElementById('acknowledge').checked) {
+        showAlert('warning', 'Please acknowledge that all information is correct.');
+        return;
+    }
+    
+    document.getElementById('loadingSubmit').style.display = 'block';
+    hideAllAlerts();
+    
+    try {
+        const formData = collectFormData();
+        await submitToWebApp(formData);
+        await sendEmailNotifications(formData);
+        
+        document.getElementById('loadingSubmit').style.display = 'none';
+        showAlert('success', 'Time entry submitted successfully! You will receive a confirmation email at ' + formData.vendorEmail);
+        
+        setTimeout(() => {
+            document.getElementById('timeEntryForm').reset();
+            document.getElementById('eventDate').valueAsDate = new Date();
+            calculatePayment();
+            hideAllAlerts();
+        }, 3000);
+        
+    } catch (error) {
+        document.getElementById('loadingSubmit').style.display = 'none';
+        console.error('Submission error:', error);
+        showAlert('error', 'Failed to submit. Please try again or contact office@wctedance.com');
+    }
+});
+
+function collectFormData() {
+    const form = document.getElementById('timeEntryForm');
+    const formData = new FormData(form);
+    
+    let basePay = 0, overtimePay = 0, details = '';
+    
+    switch(currentVendor.payType) {
+        case 'hourly':
+            const hourlyResult = calculateHourlyPay();
+            basePay = hourlyResult.basePay;
+            overtimePay = hourlyResult.overtimePay;
+            details = `Hours: ${(hourlyResult.regularHours + hourlyResult.overtimeHours).toFixed(2)}`;
+            break;
+        case 'daily':
+            basePay = calculateDailyPay();
+            details = `Day Type: ${formData.get('dayType')}`;
+            break;
+        case 'routine':
+            basePay = calculateRoutinePay();
+            details = `Routines: ${formData.get('routineCount')}`;
+            break;
+        case 'fixed':
+            basePay = currentVendor.fixedAmount;
+            details = 'Fixed Amount';
+            break;
+    }
+    
+    const reimbursements = calculateReimbursements();
+    const totalPay = basePay + overtimePay + reimbursements;
+    
+    return {
+        vendorId: currentVendor.id,
+        vendorName: `${currentVendor.firstName} ${currentVendor.lastName}`,
+        vendorEmail: currentVendor.email,
+        payType: currentVendor.payType,
+        eventDate: formData.get('eventDate'),
+        eventName: formData.get('eventName'),
+        eventLocation: formData.get('eventLocation'),
+        rolePerformed: formData.get('rolePerformed'),
+        workDetails: details,
+        clockIn: formData.get('clockIn') || 'N/A',
+        clockOut: formData.get('clockOut') || 'N/A',
+        breakMinutes: formData.get('breakMinutes') || '0',
+        dayType: formData.get('dayType') || 'N/A',
+        routineCount: formData.get('routineCount') || '0',
+        travelReimbursement: formData.get('travelReimbursement') || '0',
+        mealAllowance: formData.get('mealAllowance') || '0',
+        lodgingReimbursement: formData.get('lodgingReimbursement') || '0',
+        otherExpenses: formData.get('otherExpenses') || '0',
+        expenseNotes: formData.get('expenseNotes') || '',
+        basePay: basePay.toFixed(2),
+        overtimePay: overtimePay.toFixed(2),
+        reimbursements: reimbursements.toFixed(2),
+        totalPay: totalPay.toFixed(2),
+        additionalNotes: formData.get('additionalNotes') || '',
+        submissionDate: new Date().toISOString(),
+        status: 'Pending Review'
+    };
+}
+
+async function submitToWebApp(data) {
+    const response = await fetch(WEBAPP_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain'},
+        body: JSON.stringify({action: 'submitTimeEntry', data: data})
+    });
+    
+    if (!response.ok) throw new Error('Failed to submit');
     return await response.json();
 }
-        
-        async function sendEmailNotifications(data) {
-            // Email to office
-            const officeEmailContent = `
 
-WCTE TIME ENTRY SUBMISSION
-=========================
+async function sendEmailNotifications(data) {
+    const officeEmail = `WCTE TIME ENTRY
+Vendor: ${data.vendorName}
+Event: ${data.eventName} (${data.eventDate})
+Location: ${data.eventLocation}
+Role: ${data.rolePerformed}
+Work: ${data.workDetails}
+Base Pay: $${data.basePay}
+OT Pay: $${data.overtimePay}
+Expenses: $${data.reimbursements}
+TOTAL: $${data.totalPay}`;
+    
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
+        from_name: data.vendorName,
+        from_email: data.vendorEmail,
+        subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
+        message: officeEmail,
+        to_email: 'office@wctedance.com'
+    });
+    
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
+        to_email: data.vendorEmail,
+        vendor_name: data.vendorName,
+        event_name: data.eventName,
+        event_date: data.eventDate,
+        total_amount: data.totalPay
+    });
+}
 
-VENDOR INFORMATION:
-- Name: ${data.vendorName}
-- Email: ${data.vendorEmail}
-- Vendor ID: ${data.vendorId}
-- Pay Structure: ${data.payType}
+function showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
+}
 
-EVENT DETAILS:
-- Event: ${data.eventName}
-- Location: ${data.eventLocation}
-- Date: ${data.eventDate}
-- Role: ${data.rolePerformed}
+function showAlert(type, message) {
+    hideAllAlerts();
+    const alertId = type === 'success' ? 'alertSuccess' : type === 'error' ? 'alertError' : 'alertWarning';
+    const alertEl = document.getElementById(alertId);
+    alertEl.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+    alertEl.classList.add('show');
+    alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
-WORK PERFORMED:
-${data.workDetails}
-
-PAYMENT BREAKDOWN:
-- Base Pay: $${data.basePay}
-- Overtime Pay: $${data.overtimePay}
-- Travel: $${data.travelReimbursement}
-- Meals: $${data.mealAllowance}
-- Lodging: $${data.lodgingReimbursement}
-- Other Expenses: $${data.otherExpenses}
-----------------------------
-TOTAL: $${data.totalPay}
-
-EXPENSE NOTES:
-${data.expenseNotes || 'None'}
-
-ADDITIONAL NOTES:
-${data.additionalNotes || 'None'}
-
-STATUS: ${data.status}
-Submitted: ${new Date(data.submissionDate).toLocaleString()}
-            `;
-            
-            // Send to office
-            await emailjs.send(
-                EMAILJS_SERVICE_ID,
-                EMAILJS_TEMPLATE_OFFICE,
-                {
-                    from_name: data.vendorName,
-                    from_email: data.vendorEmail,
-                    subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
-                    message: officeEmailContent,
-                    to_email: 'office@wctedance.com'
-                }
-            );
-            
-            // Send confirmation to vendor
-            await emailjs.send(
-                EMAILJS_SERVICE_ID,
-                EMAILJS_TEMPLATE_CONFIRMATION,
-                {
-                    to_email: data.vendorEmail,
-                    vendor_name: data.vendorName,
-                    event_name: data.eventName,
-                    event_date: data.eventDate,
-                    total_amount: data.totalPay
-                }
-            );
-        }
-        
-        // ========================================
-        // UTILITY FUNCTIONS
-        // ========================================
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionId).classList.add('active');
-        }
-        
-        function showAlert(type, message) {
-            hideAllAlerts();
-            
-            let alertId = '';
-            switch(type) {
-                case 'success':
-                    alertId = 'alertSuccess';
-                    break;
-                case 'error':
-                    alertId = 'alertError';
-                    break;
-                case 'warning':
-                    alertId = 'alertWarning';
-                    break;
-            }
-            
-            const alertEl = document.getElementById(alertId);
-            alertEl.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
-            alertEl.classList.add('show');
-            alertEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        
-        function hideAllAlerts() {
-            document.querySelectorAll('.alert').forEach(alert => {
-                alert.classList.remove('show');
-            });
-        }
+function hideAllAlerts() {
+    document.querySelectorAll('.alert').forEach(alert => alert.classList.remove('show'));
+}
     </script>
 </body>
 </html>
