@@ -698,7 +698,12 @@ function viewDetails(submissionId) {
     
     try {
         driveData = JSON.parse(sub.driveData || '{}');
-    } catch(e) {}
+        console.log('DriveData parsed:', driveData);
+        console.log('Files in driveData:', driveData.files);
+    } catch(e) {
+        console.error('Error parsing driveData:', e);
+        console.log('Raw driveData:', sub.driveData);
+    }
     
     const mileageTotal = parseFloat(sub.mileageTotal || 0);
     const expensesTotal = parseFloat(sub.expensesTotal || 0);
@@ -866,6 +871,12 @@ function viewDetails(submissionId) {
             <h3>Receipts (${driveData.files ? driveData.files.length : 0})</h3>
             ${driveData.files && driveData.files.length > 0 ? '<p style="color: #4285f4; margin-bottom: 15px;"><strong>💡 Tip:</strong> Click "View" to open receipts in Google Drive. All receipts are organized in the folder shown above.</p>' : ''}
             ${driveReceiptsHTML}
+            
+            <!-- DEBUG INFO - Remove after testing -->
+            <details style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+                <summary style="cursor: pointer; font-weight: 600; color: #667eea;">🔍 Debug Info (Click to expand)</summary>
+                <pre style="margin-top: 10px; padding: 10px; background: white; border: 1px solid #dee2e6; border-radius: 4px; overflow-x: auto; font-size: 0.85em;">${JSON.stringify(driveData, null, 2)}</pre>
+            </details>
         </div>
         
         ${sub.additionalNotes ? `
