@@ -151,6 +151,21 @@
             margin-left: 10px;
         }
         
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+        
+        .btn-add {
+            background: #28a745;
+        }
+        
+        .btn-remove {
+            background: #dc3545;
+            padding: 6px 12px;
+            font-size: 0.85em;
+        }
+        
         .info-box {
             background: #e7f3ff;
             border-left: 4px solid #2196F3;
@@ -187,6 +202,67 @@
             padding-top: 15px;
             margin-top: 10px;
             border-top: 2px solid #667eea;
+        }
+        
+        .expense-entry {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 3px solid #667eea;
+        }
+        
+        .expense-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .file-upload-area {
+            background: #f8f9fa;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload-area:hover {
+            background: #e8ebfc;
+            border-color: #764ba2;
+        }
+        
+        .file-upload-area input[type="file"] {
+            display: none;
+        }
+        
+        .uploaded-files {
+            margin-top: 15px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .file-item-name {
+            flex: 1;
+            font-size: 0.9em;
+            color: #333;
+        }
+        
+        .file-item-size {
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-right: 10px;
         }
         
         .helper-text {
@@ -350,6 +426,7 @@
                         </div>
                     </div>
                     
+                    <!-- Time Entry Fields (Hourly/Daily/Routine/Fixed) -->
                     <div id="hourlyFields" class="time-entry-fields">
                         <div class="section-header">Time Worked</div>
                         
@@ -414,42 +491,48 @@
                         </div>
                     </div>
                     
-                    <div class="section-header">Additional Compensation & Expenses</div>
+                    <!-- NEW: Mileage Entries -->
+                    <div class="section-header">Mileage Reimbursement</div>
                     
-                    <div class="two-col">
-                        <div class="form-group">
-                            <label for="travelReimbursement">Travel Reimbursement</label>
-                            <input type="number" id="travelReimbursement" name="travelReimbursement" value="0" min="0" step="0.01">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="mealAllowance">Meal Allowance</label>
-                            <input type="number" id="mealAllowance" name="mealAllowance" value="0" min="0" step="0.01">
-                        </div>
+                    <div class="info-box">
+                        <p><strong>Mileage Rate:</strong> $0.67 per mile</p>
+                        <p>Add all trips related to this event (to/from venue, errands, etc.)</p>
                     </div>
                     
-                    <div class="two-col">
-                        <div class="form-group">
-                            <label for="lodgingReimbursement">Lodging Reimbursement</label>
-                            <input type="number" id="lodgingReimbursement" name="lodgingReimbursement" value="0" min="0" step="0.01">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="otherExpenses">Other Expenses</label>
-                            <input type="number" id="otherExpenses" name="otherExpenses" value="0" min="0" step="0.01">
-                        </div>
+                    <div id="mileageEntries"></div>
+                    
+                    <button type="button" class="btn btn-add btn-small" onclick="addMileageEntry()">+ Add Mileage Entry</button>
+                    
+                    <!-- NEW: General Expenses -->
+                    <div class="section-header">General Expenses</div>
+                    
+                    <div class="info-box">
+                        <p>Add expenses such as meals, lodging, supplies, parking, etc.</p>
                     </div>
+                    
+                    <div id="expenseEntries"></div>
+                    
+                    <button type="button" class="btn btn-add btn-small" onclick="addExpenseEntry()">+ Add Expense</button>
+                    
+                    <!-- Receipt Upload -->
+                    <div class="section-header">Receipt Upload</div>
                     
                     <div class="form-group">
-                        <label for="expenseNotes">Expense Notes/Receipts</label>
-                        <textarea id="expenseNotes" name="expenseNotes"></textarea>
+                        <label for="receiptUpload">Upload Receipts (Optional)</label>
+                        <div class="file-upload-area" onclick="document.getElementById('receiptUpload').click()">
+                            <input type="file" id="receiptUpload" multiple accept="image/*,.pdf" onchange="handleFileSelect(event)">
+                            <p>📎 Click to upload receipts</p>
+                            <p class="helper-text">Images (JPG, PNG) or PDF files</p>
+                        </div>
+                        <div id="uploadedFiles" class="uploaded-files"></div>
                     </div>
                     
                     <div class="form-group">
                         <label for="additionalNotes">Additional Notes</label>
-                        <textarea id="additionalNotes" name="additionalNotes"></textarea>
+                        <textarea id="additionalNotes" name="additionalNotes" placeholder="Any additional information"></textarea>
                     </div>
                     
+                    <!-- Payment Calculation -->
                     <div class="calculation-box">
                         <h3 style="margin-bottom: 15px; color: #667eea;">Payment Calculation</h3>
                         
@@ -464,8 +547,13 @@
                         </div>
                         
                         <div class="calculation-row">
-                            <span>Reimbursements:</span>
-                            <span id="calcReimbursements">$0.00</span>
+                            <span>Mileage:</span>
+                            <span id="calcMileage">$0.00</span>
+                        </div>
+                        
+                        <div class="calculation-row">
+                            <span>Expenses:</span>
+                            <span id="calcExpenses">$0.00</span>
                         </div>
                         
                         <div class="calculation-row">
@@ -474,6 +562,7 @@
                         </div>
                     </div>
                     
+                    <!-- Acknowledgment -->
                     <div class="info-box" style="background: #fff3cd; border-color: #ffc107;">
                         <p style="color: #856404;"><strong>Acknowledgment:</strong></p>
                         <p style="color: #856404;">By submitting this form, I certify that all information provided is accurate and truthful.</p>
@@ -510,11 +599,18 @@ emailjs.init(EMAILJS_PUBLIC_KEY);
 
 let currentVendor = null;
 let vendorsList = [];
+let mileageEntries = [];
+let expenseEntries = [];
+let uploadedFiles = [];
 
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('eventDate').valueAsDate = new Date();
     setupCalculationListeners();
     loadVendors();
+    
+    // Add initial entries
+    addMileageEntry();
+    addExpenseEntry();
 });
 
 async function loadVendors() {
@@ -554,6 +650,9 @@ function logout() {
     currentVendor = null;
     document.getElementById('timeEntryForm').reset();
     document.getElementById('eventDate').valueAsDate = new Date();
+    mileageEntries = [];
+    expenseEntries = [];
+    uploadedFiles = [];
     hideAllAlerts();
     showSection('sectionLogin');
 }
@@ -622,8 +721,146 @@ function getRateDisplay(vendor) {
     }
 }
 
+// NEW: Mileage Entry Management
+function addMileageEntry() {
+    const id = Date.now();
+    mileageEntries.push({ id, date: '', miles: 0 });
+    renderMileageEntries();
+}
+
+function removeMileageEntry(id) {
+    mileageEntries = mileageEntries.filter(e => e.id !== id);
+    renderMileageEntries();
+    calculatePayment();
+}
+
+function renderMileageEntries() {
+    const container = document.getElementById('mileageEntries');
+    container.innerHTML = mileageEntries.map((entry, index) => `
+        <div class="expense-entry">
+            <div class="expense-entry-header">
+                <strong>Trip ${index + 1}</strong>
+                ${mileageEntries.length > 1 ? `<button type="button" class="btn btn-remove" onclick="removeMileageEntry(${entry.id})">Remove</button>` : ''}
+            </div>
+            <div class="two-col">
+                <div>
+                    <label>Date</label>
+                    <input type="date" value="${entry.date}" onchange="updateMileageEntry(${entry.id}, 'date', this.value)">
+                </div>
+                <div>
+                    <label>Miles</label>
+                    <input type="number" step="0.1" min="0" value="${entry.miles}" onchange="updateMileageEntry(${entry.id}, 'miles', this.value)" placeholder="0.0">
+                </div>
+            </div>
+            <p class="helper-text">Reimbursement: $${(entry.miles * 0.67).toFixed(2)}</p>
+        </div>
+    `).join('');
+}
+
+function updateMileageEntry(id, field, value) {
+    const entry = mileageEntries.find(e => e.id === id);
+    if (entry) {
+        entry[field] = field === 'miles' ? parseFloat(value) || 0 : value;
+        renderMileageEntries();
+        calculatePayment();
+    }
+}
+
+// NEW: General Expense Entry Management
+function addExpenseEntry() {
+    const id = Date.now();
+    expenseEntries.push({ id, date: '', amount: 0, description: '' });
+    renderExpenseEntries();
+}
+
+function removeExpenseEntry(id) {
+    expenseEntries = expenseEntries.filter(e => e.id !== id);
+    renderExpenseEntries();
+    calculatePayment();
+}
+
+function renderExpenseEntries() {
+    const container = document.getElementById('expenseEntries');
+    container.innerHTML = expenseEntries.map((entry, index) => `
+        <div class="expense-entry">
+            <div class="expense-entry-header">
+                <strong>Expense ${index + 1}</strong>
+                ${expenseEntries.length > 1 ? `<button type="button" class="btn btn-remove" onclick="removeExpenseEntry(${entry.id})">Remove</button>` : ''}
+            </div>
+            <div class="two-col">
+                <div>
+                    <label>Date</label>
+                    <input type="date" value="${entry.date}" onchange="updateExpenseEntry(${entry.id}, 'date', this.value)">
+                </div>
+                <div>
+                    <label>Amount</label>
+                    <input type="number" step="0.01" min="0" value="${entry.amount}" onchange="updateExpenseEntry(${entry.id}, 'amount', this.value)" placeholder="0.00">
+                </div>
+            </div>
+            <div>
+                <label>Description</label>
+                <input type="text" value="${entry.description}" onchange="updateExpenseEntry(${entry.id}, 'description', this.value)" placeholder="e.g., Hotel, Meals, Parking">
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateExpenseEntry(id, field, value) {
+    const entry = expenseEntries.find(e => e.id === id);
+    if (entry) {
+        entry[field] = field === 'amount' ? parseFloat(value) || 0 : value;
+        renderExpenseEntries();
+        calculatePayment();
+    }
+}
+
+// NEW: File Upload Handling
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    
+    files.forEach(file => {
+        if (file.size > 5 * 1024 * 1024) {
+            showAlert('warning', `File "${file.name}" is too large. Maximum 5MB per file.`);
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            uploadedFiles.push({
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: e.target.result
+            });
+            renderUploadedFiles();
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeFile(index) {
+    uploadedFiles.splice(index, 1);
+    renderUploadedFiles();
+}
+
+function renderUploadedFiles() {
+    const container = document.getElementById('uploadedFiles');
+    if (uploadedFiles.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = uploadedFiles.map((file, index) => `
+        <div class="file-item">
+            <span class="file-item-name">📄 ${file.name}</span>
+            <span class="file-item-size">${(file.size / 1024).toFixed(1)} KB</span>
+            <button type="button" class="btn btn-remove" onclick="removeFile(${index})">Remove</button>
+        </div>
+    `).join('');
+}
+
 function setupCalculationListeners() {
-    ['clockIn', 'clockOut', 'breakMinutes', 'dayType', 'routineCount', 'travelReimbursement', 'mealAllowance', 'lodgingReimbursement', 'otherExpenses'].forEach(id => {
+    ['clockIn', 'clockOut', 'breakMinutes', 'dayType', 'routineCount'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener(el.type === 'number' ? 'input' : 'change', calculatePayment);
     });
@@ -652,7 +889,8 @@ function calculatePayment() {
             break;
     }
     
-    const reimbursements = calculateReimbursements();
+    const mileageTotal = mileageEntries.reduce((sum, e) => sum + (e.miles * 0.67), 0);
+    const expensesTotal = expenseEntries.reduce((sum, e) => sum + e.amount, 0);
     
     document.getElementById('calcBasePay').textContent = `$${basePay.toFixed(2)}`;
     
@@ -663,8 +901,9 @@ function calculatePayment() {
         document.getElementById('calcOvertimeRow').style.display = 'none';
     }
     
-    document.getElementById('calcReimbursements').textContent = `$${reimbursements.toFixed(2)}`;
-    document.getElementById('calcTotal').textContent = `$${(basePay + overtimePay + reimbursements).toFixed(2)}`;
+    document.getElementById('calcMileage').textContent = `$${mileageTotal.toFixed(2)}`;
+    document.getElementById('calcExpenses').textContent = `$${expensesTotal.toFixed(2)}`;
+    document.getElementById('calcTotal').textContent = `$${(basePay + overtimePay + mileageTotal + expensesTotal).toFixed(2)}`;
 }
 
 function calculateHourlyPay() {
@@ -705,11 +944,6 @@ function calculateRoutinePay() {
     return routineCount * currentVendor.perRoutineRate;
 }
 
-function calculateReimbursements() {
-    return ['travelReimbursement', 'mealAllowance', 'lodgingReimbursement', 'otherExpenses']
-        .reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);
-}
-
 document.getElementById('timeEntryForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -738,6 +972,11 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
         setTimeout(() => {
             document.getElementById('timeEntryForm').reset();
             document.getElementById('eventDate').valueAsDate = new Date();
+            mileageEntries = [];
+            expenseEntries = [];
+            uploadedFiles = [];
+            addMileageEntry();
+            addExpenseEntry();
             calculatePayment();
             hideAllAlerts();
         }, 3000);
@@ -776,8 +1015,9 @@ function collectFormData() {
             break;
     }
     
-    const reimbursements = calculateReimbursements();
-    const totalPay = basePay + overtimePay + reimbursements;
+    const mileageTotal = mileageEntries.reduce((sum, e) => sum + (e.miles * 0.67), 0);
+    const expensesTotal = expenseEntries.reduce((sum, e) => sum + e.amount, 0);
+    const totalPay = basePay + overtimePay + mileageTotal + expensesTotal;
     
     return {
         vendorId: currentVendor.id,
@@ -794,14 +1034,14 @@ function collectFormData() {
         breakMinutes: formData.get('breakMinutes') || '0',
         dayType: formData.get('dayType') || 'N/A',
         routineCount: formData.get('routineCount') || '0',
-        travelReimbursement: formData.get('travelReimbursement') || '0',
-        mealAllowance: formData.get('mealAllowance') || '0',
-        lodgingReimbursement: formData.get('lodgingReimbursement') || '0',
-        otherExpenses: formData.get('otherExpenses') || '0',
-        expenseNotes: formData.get('expenseNotes') || '',
+        mileageEntries: JSON.stringify(mileageEntries),
+        mileageTotal: mileageTotal.toFixed(2),
+        expenseEntries: JSON.stringify(expenseEntries),
+        expensesTotal: expensesTotal.toFixed(2),
+        receipts: JSON.stringify(uploadedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))),
+        receiptData: uploadedFiles.length > 0 ? JSON.stringify(uploadedFiles) : '',
         basePay: basePay.toFixed(2),
         overtimePay: overtimePay.toFixed(2),
-        reimbursements: reimbursements.toFixed(2),
         totalPay: totalPay.toFixed(2),
         additionalNotes: formData.get('additionalNotes') || '',
         submissionDate: new Date().toISOString(),
@@ -821,16 +1061,31 @@ async function submitToWebApp(data) {
 }
 
 async function sendEmailNotifications(data) {
+    const mileageDetails = mileageEntries.map((e, i) => 
+        `Trip ${i+1}: ${e.date || 'No date'} - ${e.miles} miles = $${(e.miles * 0.67).toFixed(2)}`
+    ).join('\n');
+    
+    const expenseDetails = expenseEntries.map((e, i) => 
+        `Expense ${i+1}: ${e.date || 'No date'} - ${e.description || 'No description'} = $${e.amount.toFixed(2)}`
+    ).join('\n');
+    
     const officeEmail = `WCTE TIME ENTRY
 Vendor: ${data.vendorName}
 Event: ${data.eventName} (${data.eventDate})
 Location: ${data.eventLocation}
 Role: ${data.rolePerformed}
 Work: ${data.workDetails}
+
+PAYMENT:
 Base Pay: $${data.basePay}
 OT Pay: $${data.overtimePay}
-Expenses: $${data.reimbursements}
-TOTAL: $${data.totalPay}`;
+Mileage: $${data.mileageTotal}
+${mileageDetails}
+Expenses: $${data.expensesTotal}
+${expenseDetails}
+TOTAL: $${data.totalPay}
+
+Receipts: ${uploadedFiles.length} file(s) attached`;
     
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
         from_name: data.vendorName,
