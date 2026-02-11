@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WCTE Admin Dashboard - Vendor Management</title>
+    <title>WCTE Admin Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -56,17 +56,9 @@
             border-left: 4px solid #667eea;
         }
         
-        .stat-card.pending {
-            border-left-color: #ffc107;
-        }
-        
-        .stat-card.approved {
-            border-left-color: #28a745;
-        }
-        
-        .stat-card.paid {
-            border-left-color: #17a2b8;
-        }
+        .stat-card.pending { border-left-color: #ffc107; }
+        .stat-card.approved { border-left-color: #28a745; }
+        .stat-card.paid { border-left-color: #17a2b8; }
         
         .stat-card h3 {
             color: #6c757d;
@@ -140,25 +132,10 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
         
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .btn-info {
-            background: #17a2b8;
-            color: white;
-        }
-        
-        .btn-sm {
-            padding: 6px 15px;
-            font-size: 0.85em;
-        }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-sm { padding: 6px 15px; font-size: 0.85em; }
         
         .submissions-table {
             background: white;
@@ -208,25 +185,10 @@
             font-weight: 600;
         }
         
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-paid {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-        
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-paid { background: #d1ecf1; color: #0c5460; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
         
         .action-buttons {
             display: flex;
@@ -239,134 +201,42 @@
             color: #6c757d;
         }
         
-        .empty-state svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            opacity: 0.5;
+        .loading {
+            text-align: center;
+            padding: 40px;
         }
         
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
         
-        .modal.show {
-            display: flex;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-        
-        .modal-header {
-            padding: 20px 25px;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .modal-header h2 {
-            color: #333;
-            font-size: 1.5em;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5em;
-            cursor: pointer;
-            color: #6c757d;
-        }
-        
-        .modal-body {
-            padding: 25px;
-        }
-        
-        .detail-row {
-            display: flex;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f3f5;
-        }
-        
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-        
-        .detail-label {
-            font-weight: 600;
-            color: #495057;
-            width: 180px;
-            flex-shrink: 0;
-        }
-        
-        .detail-value {
-            color: #333;
-            flex: 1;
-        }
-        
-        .payment-breakdown {
-            background: #f8f9fa;
-            padding: 15px;
+        .alert {
+            padding: 15px 20px;
             border-radius: 8px;
-            margin: 15px 0;
+            margin-bottom: 20px;
+            display: none;
         }
         
-        .payment-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-        }
-        
-        .payment-row.total {
-            border-top: 2px solid #667eea;
-            margin-top: 10px;
-            padding-top: 15px;
-            font-weight: 700;
-            font-size: 1.2em;
-            color: #667eea;
-        }
+        .alert.show { display: block; }
+        .alert-success { background: #d4edda; border: 2px solid #28a745; color: #155724; }
+        .alert-error { background: #f8d7da; border: 2px solid #dc3545; color: #721c24; }
         
         @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            .controls > * {
-                width: 100%;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .detail-row {
-                flex-direction: column;
-            }
-            
-            .detail-label {
-                width: 100%;
-                margin-bottom: 5px;
-            }
+            .stats-grid { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+            .controls > * { width: 100%; }
+            .action-buttons { flex-direction: column; }
         }
     </style>
 </head>
@@ -377,23 +247,25 @@
     </div>
     
     <div class="container">
-        <!-- Statistics Cards -->
+        <div id="alertSuccess" class="alert alert-success"></div>
+        <div id="alertError" class="alert alert-error"></div>
+        
         <div class="stats-grid">
             <div class="stat-card pending">
                 <h3>Pending Review</h3>
-                <div class="value" id="statPending">0</div>
+                <div class="value" id="statPending">-</div>
                 <div class="label">awaiting approval</div>
             </div>
             
             <div class="stat-card approved">
                 <h3>Approved</h3>
-                <div class="value" id="statApproved">0</div>
+                <div class="value" id="statApproved">-</div>
                 <div class="label">ready for payment</div>
             </div>
             
             <div class="stat-card paid">
                 <h3>Paid</h3>
-                <div class="value" id="statPaid">0</div>
+                <div class="value" id="statPaid">-</div>
                 <div class="label">completed</div>
             </div>
             
@@ -404,7 +276,6 @@
             </div>
         </div>
         
-        <!-- Controls -->
         <div class="controls">
             <input type="text" class="search" id="searchInput" placeholder="Search by vendor name, event, or location...">
             
@@ -416,502 +287,222 @@
                 <option value="Rejected">Rejected</option>
             </select>
             
-            <select id="dateFilter">
-                <option value="">All Dates</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-            </select>
-            
-            <button class="btn btn-primary" onclick="loadSubmissions()">Refresh</button>
-            <button class="btn btn-primary" onclick="exportToCSV()">Export CSV</button>
+            <button class="btn btn-primary" onclick="loadSubmissions()">🔄 Refresh</button>
+            <button class="btn btn-primary" onclick="exportToCSV()">📥 Export CSV</button>
         </div>
         
-        <!-- Submissions Table -->
-        <div class="submissions-table">
+        <div id="loadingContainer" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading submissions...</p>
+        </div>
+        
+        <div class="submissions-table" id="tableContainer" style="display: none;">
             <div class="table-wrapper">
-                <table id="submissionsTable">
+                <table>
                     <thead>
                         <tr>
                             <th>Date</th>
                             <th>Vendor</th>
                             <th>Event</th>
-                            <th>Type</th>
                             <th>Amount</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="submissionsBody">
-                        <!-- Will be populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
-            
-            <div id="emptyState" class="empty-state" style="display: none;">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <h3>No submissions found</h3>
-                <p>There are no time entries matching your filters.</p>
-            </div>
         </div>
-    </div>
-    
-    <!-- Detail Modal -->
-    <div class="modal" id="detailModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Submission Details</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Will be populated by JavaScript -->
-            </div>
+        
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h3>No submissions found</h3>
+            <p>There are no time entries to display yet.</p>
         </div>
     </div>
     
     <script>
-        // ========================================
-        // CONFIGURATION
-        // ========================================
-        const GOOGLE_SHEET_ID = '1JrFlCWmTVYkJME8CQYpwEG9WFWU3Ei-GFmv6hdTlRsg';
-        const GOOGLE_API_KEY = 'cfb9963ce5ff700a1143163f0fc7c1a451f601f6';
+const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz9L9HpPFYqFUeLvJeZ4MmeALiiE4zPdIRcKLAGWPyh8-YvFJz8V43aJ2Nh-4VWYKyt/exec';
+
+let allSubmissions = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadSubmissions();
+    document.getElementById('searchInput').addEventListener('input', filterSubmissions);
+    document.getElementById('statusFilter').addEventListener('change', filterSubmissions);
+});
+
+async function loadSubmissions() {
+    document.getElementById('loadingContainer').style.display = 'block';
+    document.getElementById('tableContainer').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+    
+    try {
+        const response = await fetch(`${WEBAPP_URL}?action=getTimeEntries`);
+        const data = await response.json();
         
-        // ========================================
-        // GLOBAL STATE
-        // ========================================
-        let allSubmissions = [];
-        let currentSubmission = null;
-        
-        // ========================================
-        // MOCK DATA (Replace with Google Sheets)
-        // ========================================
-        const MOCK_SUBMISSIONS = [
-            {
-                id: 'SUB001',
-                submissionDate: '2025-01-28T14:30:00',
-                vendorId: 'V001',
-                vendorName: 'Sarah Johnson',
-                vendorEmail: 'judge1@example.com',
-                payType: 'hourly',
-                eventDate: '2025-01-27',
-                eventName: 'Worcester Regional Championship',
-                eventLocation: 'Worcester, MA',
-                rolePerformed: 'Judge',
-                workDetails: 'Hours: 11.50 (Regular: 10.00, OT: 1.50)',
-                basePay: '350.00',
-                overtimePay: '78.75',
-                reimbursements: '45.00',
-                totalPay: '473.75',
-                status: 'Pending Review'
-            },
-            {
-                id: 'SUB002',
-                submissionDate: '2025-01-27T09:15:00',
-                vendorId: 'V003',
-                vendorName: 'Emily Rodriguez',
-                vendorEmail: 'instructor@example.com',
-                payType: 'daily',
-                eventDate: '2025-01-26',
-                eventName: 'Boston Dance Showcase',
-                eventLocation: 'Boston, MA',
-                rolePerformed: 'Instructor',
-                workDetails: 'Day Type: full',
-                basePay: '400.00',
-                overtimePay: '0.00',
-                reimbursements: '0.00',
-                totalPay: '400.00',
-                status: 'Approved'
-            },
-            {
-                id: 'SUB003',
-                submissionDate: '2025-01-26T16:45:00',
-                vendorId: 'V004',
-                vendorName: 'David Williams',
-                vendorEmail: 'judge2@example.com',
-                payType: 'routine',
-                eventDate: '2025-01-25',
-                eventName: 'Springfield Competition',
-                eventLocation: 'Springfield, MA',
-                rolePerformed: 'Judge',
-                workDetails: 'Routines: 85',
-                basePay: '170.00',
-                overtimePay: '0.00',
-                reimbursements: '25.00',
-                totalPay: '195.00',
-                status: 'Paid'
-            }
-        ];
-        
-        // ========================================
-        // INITIALIZATION
-        // ========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSubmissions();
-            
-            // Setup event listeners
-            document.getElementById('searchInput').addEventListener('input', filterSubmissions);
-            document.getElementById('statusFilter').addEventListener('change', filterSubmissions);
-            document.getElementById('dateFilter').addEventListener('change', filterSubmissions);
+        if (data.success && data.entries) {
+            allSubmissions = data.entries;
+            console.log('Loaded entries:', allSubmissions.length);
+            updateStatistics();
+            displaySubmissions(allSubmissions);
+        } else {
+            throw new Error('Invalid response from server');
+        }
+    } catch (error) {
+        console.error('Error loading submissions:', error);
+        showAlert('error', 'Failed to load submissions. Please try again.');
+        document.getElementById('loadingContainer').style.display = 'none';
+        document.getElementById('emptyState').style.display = 'block';
+    }
+}
+
+function updateStatistics() {
+    const pending = allSubmissions.filter(s => s.status === 'Pending Review');
+    const approved = allSubmissions.filter(s => s.status === 'Approved');
+    const paid = allSubmissions.filter(s => s.status === 'Paid');
+    
+    const pendingAmount = pending.reduce((sum, s) => sum + parseFloat(s.totalPay || 0), 0);
+    
+    document.getElementById('statPending').textContent = pending.length;
+    document.getElementById('statApproved').textContent = approved.length;
+    document.getElementById('statPaid').textContent = paid.length;
+    document.getElementById('statAmount').textContent = `$${pendingAmount.toFixed(2)}`;
+}
+
+function displaySubmissions(submissions) {
+    document.getElementById('loadingContainer').style.display = 'none';
+    
+    const tbody = document.getElementById('submissionsBody');
+    const emptyState = document.getElementById('emptyState');
+    const tableContainer = document.getElementById('tableContainer');
+    
+    if (submissions.length === 0) {
+        tableContainer.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+    }
+    
+    emptyState.style.display = 'none';
+    tableContainer.style.display = 'block';
+    
+    tbody.innerHTML = submissions.map(sub => `
+        <tr>
+            <td>${formatDate(sub.eventDate)}</td>
+            <td>
+                <strong>${sub.vendorName}</strong><br>
+                <small style="color: #6c757d;">${sub.eventLocation}</small>
+            </td>
+            <td>${sub.eventName}</td>
+            <td><strong>$${parseFloat(sub.totalPay).toFixed(2)}</strong></td>
+            <td><span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span></td>
+            <td>
+                <div class="action-buttons">
+                    ${sub.status === 'Pending Review' ? `
+                        <button class="btn btn-success btn-sm" onclick="updateStatus('${sub.id}', 'Approved')">✓ Approve</button>
+                    ` : ''}
+                    ${sub.status === 'Approved' ? `
+                        <button class="btn btn-info btn-sm" onclick="updateStatus('${sub.id}', 'Paid')">💳 Mark Paid</button>
+                    ` : ''}
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function updateStatus(entryId, newStatus) {
+    if (!confirm(`Are you sure you want to mark this entry as ${newStatus}?`)) return;
+    
+    try {
+        const response = await fetch(WEBAPP_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({
+                action: 'updateStatus',
+                entryId: entryId,
+                status: newStatus,
+                updatedBy: 'Admin'
+            })
         });
         
-        // ========================================
-        // DATA LOADING
-        // ========================================
-        async function loadSubmissions() {
-            try {
-                // TODO: Replace with actual Google Sheets API call
-                // For now, use mock data
-                await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-                allSubmissions = MOCK_SUBMISSIONS;
-                
-                updateStatistics();
-                displaySubmissions(allSubmissions);
-            } catch (error) {
-                console.error('Error loading submissions:', error);
-                alert('Failed to load submissions. Please refresh the page.');
-            }
-        }
+        const data = await response.json();
         
-        // ========================================
-        // STATISTICS
-        // ========================================
-        function updateStatistics() {
-            const pending = allSubmissions.filter(s => s.status === 'Pending Review');
-            const approved = allSubmissions.filter(s => s.status === 'Approved');
-            const paid = allSubmissions.filter(s => s.status === 'Paid');
-            
-            const pendingAmount = pending.reduce((sum, s) => sum + parseFloat(s.totalPay), 0);
-            
-            document.getElementById('statPending').textContent = pending.length;
-            document.getElementById('statApproved').textContent = approved.length;
-            document.getElementById('statPaid').textContent = paid.length;
-            document.getElementById('statAmount').textContent = `$${pendingAmount.toFixed(2)}`;
+        if (data.success) {
+            showAlert('success', `Entry updated to ${newStatus} successfully!`);
+            await loadSubmissions();
+        } else {
+            throw new Error(data.error || 'Update failed');
         }
+    } catch (error) {
+        console.error('Update error:', error);
+        showAlert('error', 'Failed to update entry. Please try again.');
+    }
+}
+
+function filterSubmissions() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    let filtered = allSubmissions.filter(sub => {
+        const matchesSearch = !searchTerm || 
+            sub.vendorName.toLowerCase().includes(searchTerm) ||
+            sub.eventName.toLowerCase().includes(searchTerm) ||
+            sub.eventLocation.toLowerCase().includes(searchTerm);
         
-        // ========================================
-        // DISPLAY SUBMISSIONS
-        // ========================================
-        function displaySubmissions(submissions) {
-            const tbody = document.getElementById('submissionsBody');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (submissions.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-            
-            emptyState.style.display = 'none';
-            
-            tbody.innerHTML = submissions.map(sub => `
-                <tr>
-                    <td>${formatDate(sub.eventDate)}</td>
-                    <td><strong>${sub.vendorName}</strong></td>
-                    <td>${sub.eventName}<br><small style="color: #6c757d;">${sub.eventLocation}</small></td>
-                    <td>${sub.payType}</td>
-                    <td><strong>$${parseFloat(sub.totalPay).toFixed(2)}</strong></td>
-                    <td><span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-info btn-sm" onclick="viewDetails('${sub.id}')">View</button>
-                            ${sub.status === 'Pending Review' ? `
-                                <button class="btn btn-success btn-sm" onclick="approveSubmission('${sub.id}')">Approve</button>
-                                <button class="btn btn-danger btn-sm" onclick="rejectSubmission('${sub.id}')">Reject</button>
-                            ` : ''}
-                            ${sub.status === 'Approved' ? `
-                                <button class="btn btn-success btn-sm" onclick="markAsPaid('${sub.id}')">Mark Paid</button>
-                            ` : ''}
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        const matchesStatus = !statusFilter || sub.status === statusFilter;
         
-        // ========================================
-        // FILTERING
-        // ========================================
-        function filterSubmissions() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const dateFilter = document.getElementById('dateFilter').value;
-            
-            let filtered = allSubmissions.filter(sub => {
-                // Search filter
-                const matchesSearch = !searchTerm || 
-                    sub.vendorName.toLowerCase().includes(searchTerm) ||
-                    sub.eventName.toLowerCase().includes(searchTerm) ||
-                    sub.eventLocation.toLowerCase().includes(searchTerm);
-                
-                // Status filter
-                const matchesStatus = !statusFilter || sub.status === statusFilter;
-                
-                // Date filter
-                let matchesDate = true;
-                if (dateFilter) {
-                    const eventDate = new Date(sub.eventDate);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    
-                    switch(dateFilter) {
-                        case 'today':
-                            matchesDate = eventDate.toDateString() === today.toDateString();
-                            break;
-                        case 'week':
-                            const weekAgo = new Date(today);
-                            weekAgo.setDate(weekAgo.getDate() - 7);
-                            matchesDate = eventDate >= weekAgo;
-                            break;
-                        case 'month':
-                            const monthAgo = new Date(today);
-                            monthAgo.setMonth(monthAgo.getMonth() - 1);
-                            matchesDate = eventDate >= monthAgo;
-                            break;
-                    }
-                }
-                
-                return matchesSearch && matchesStatus && matchesDate;
-            });
-            
-            displaySubmissions(filtered);
-        }
-        
-        // ========================================
-        // DETAIL VIEW
-        // ========================================
-        function viewDetails(submissionId) {
-            const submission = allSubmissions.find(s => s.id === submissionId);
-            if (!submission) return;
-            
-            currentSubmission = submission;
-            
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
-                <div class="detail-row">
-                    <div class="detail-label">Submission ID:</div>
-                    <div class="detail-value">${submission.id}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Submitted:</div>
-                    <div class="detail-value">${new Date(submission.submissionDate).toLocaleString()}</div>
-                </div>
-                
-                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Vendor Information</h3>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Vendor Name:</div>
-                    <div class="detail-value">${submission.vendorName}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Email:</div>
-                    <div class="detail-value">${submission.vendorEmail}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Pay Type:</div>
-                    <div class="detail-value">${submission.payType}</div>
-                </div>
-                
-                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Event Details</h3>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Event Date:</div>
-                    <div class="detail-value">${formatDate(submission.eventDate)}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Event Name:</div>
-                    <div class="detail-value">${submission.eventName}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Location:</div>
-                    <div class="detail-value">${submission.eventLocation}</div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Role:</div>
-                    <div class="detail-value">${submission.rolePerformed}</div>
-                </div>
-                
-                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Work Details</h3>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Work Performed:</div>
-                    <div class="detail-value">${submission.workDetails}</div>
-                </div>
-                
-                <h3 style="margin: 20px 0 15px 0; color: #667eea;">Payment Breakdown</h3>
-                
-                <div class="payment-breakdown">
-                    <div class="payment-row">
-                        <span>Base Pay:</span>
-                        <span>$${parseFloat(submission.basePay).toFixed(2)}</span>
-                    </div>
-                    
-                    ${parseFloat(submission.overtimePay) > 0 ? `
-                        <div class="payment-row">
-                            <span>Overtime Pay:</span>
-                            <span>$${parseFloat(submission.overtimePay).toFixed(2)}</span>
-                        </div>
-                    ` : ''}
-                    
-                    ${parseFloat(submission.reimbursements) > 0 ? `
-                        <div class="payment-row">
-                            <span>Reimbursements:</span>
-                            <span>$${parseFloat(submission.reimbursements).toFixed(2)}</span>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="payment-row total">
-                        <span>TOTAL:</span>
-                        <span>$${parseFloat(submission.totalPay).toFixed(2)}</span>
-                    </div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">Status:</div>
-                    <div class="detail-value"><span class="status-badge status-${submission.status.toLowerCase().replace(' ', '-')}">${submission.status}</span></div>
-                </div>
-                
-                <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
-                    ${submission.status === 'Pending Review' ? `
-                        <button class="btn btn-success" onclick="approveSubmission('${submission.id}')">Approve</button>
-                        <button class="btn btn-danger" onclick="rejectSubmission('${submission.id}')">Reject</button>
-                    ` : ''}
-                    ${submission.status === 'Approved' ? `
-                        <button class="btn btn-success" onclick="markAsPaid('${submission.id}')">Mark as Paid</button>
-                    ` : ''}
-                    <button class="btn btn-primary" onclick="closeModal()">Close</button>
-                </div>
-            `;
-            
-            document.getElementById('detailModal').classList.add('show');
-        }
-        
-        function closeModal() {
-            document.getElementById('detailModal').classList.remove('show');
-            currentSubmission = null;
-        }
-        
-        // ========================================
-        // STATUS UPDATES
-        // ========================================
-        async function approveSubmission(submissionId) {
-            if (!confirm('Are you sure you want to approve this submission?')) return;
-            
-            try {
-                // TODO: Update Google Sheets
-                const submission = allSubmissions.find(s => s.id === submissionId);
-                if (submission) {
-                    submission.status = 'Approved';
-                }
-                
-                await loadSubmissions();
-                closeModal();
-                alert('Submission approved successfully!');
-            } catch (error) {
-                console.error('Error approving submission:', error);
-                alert('Failed to approve submission. Please try again.');
-            }
-        }
-        
-        async function rejectSubmission(submissionId) {
-            const reason = prompt('Please enter a reason for rejection:');
-            if (!reason) return;
-            
-            try {
-                // TODO: Update Google Sheets and send notification email
-                const submission = allSubmissions.find(s => s.id === submissionId);
-                if (submission) {
-                    submission.status = 'Rejected';
-                }
-                
-                await loadSubmissions();
-                closeModal();
-                alert('Submission rejected. Vendor will be notified.');
-            } catch (error) {
-                console.error('Error rejecting submission:', error);
-                alert('Failed to reject submission. Please try again.');
-            }
-        }
-        
-        async function markAsPaid(submissionId) {
-            if (!confirm('Confirm that payment has been processed?')) return;
-            
-            try {
-                // TODO: Update Google Sheets
-                const submission = allSubmissions.find(s => s.id === submissionId);
-                if (submission) {
-                    submission.status = 'Paid';
-                }
-                
-                await loadSubmissions();
-                closeModal();
-                alert('Marked as paid successfully!');
-            } catch (error) {
-                console.error('Error updating payment status:', error);
-                alert('Failed to update payment status. Please try again.');
-            }
-        }
-        
-        // ========================================
-        // EXPORT
-        // ========================================
-        function exportToCSV() {
-            const headers = ['Submission ID', 'Date', 'Vendor', 'Email', 'Event', 'Location', 'Role', 'Pay Type', 'Base Pay', 'Overtime', 'Reimbursements', 'Total', 'Status'];
-            
-            const rows = allSubmissions.map(sub => [
-                sub.id,
-                sub.eventDate,
-                sub.vendorName,
-                sub.vendorEmail,
-                sub.eventName,
-                sub.eventLocation,
-                sub.rolePerformed,
-                sub.payType,
-                sub.basePay,
-                sub.overtimePay,
-                sub.reimbursements,
-                sub.totalPay,
-                sub.status
-            ]);
-            
-            let csv = headers.join(',') + '\n';
-            rows.forEach(row => {
-                csv += row.map(val => `"${val}"`).join(',') + '\n';
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `wcte-submissions-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-        
-        // ========================================
-        // UTILITIES
-        // ========================================
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            });
-        }
-        
-        // Close modal on outside click
-        document.getElementById('detailModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
+        return matchesSearch && matchesStatus;
+    });
+    
+    displaySubmissions(filtered);
+}
+
+function exportToCSV() {
+    const headers = ['Date', 'Vendor', 'Event', 'Location', 'Amount', 'Status'];
+    const rows = allSubmissions.map(sub => [
+        sub.eventDate,
+        sub.vendorName,
+        sub.eventName,
+        sub.eventLocation,
+        sub.totalPay,
+        sub.status
+    ]);
+    
+    let csv = headers.join(',') + '\n';
+    rows.forEach(row => {
+        csv += row.map(val => `"${val}"`).join(',') + '\n';
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `wcte-submissions-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    showAlert('success', 'CSV file downloaded successfully!');
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+}
+
+function showAlert(type, message) {
+    const alertId = type === 'success' ? 'alertSuccess' : 'alertError';
+    const alertEl = document.getElementById(alertId);
+    alertEl.textContent = message;
+    alertEl.classList.add('show');
+    
+    setTimeout(() => {
+        alertEl.classList.remove('show');
+    }, 5000);
+}
     </script>
 </body>
 </html>
