@@ -959,15 +959,22 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
     }
     
     document.getElementById('loadingSubmit').style.display = 'block';
+    document.getElementById('loadingSubmit').querySelector('.loading-text').textContent = 
+        uploadedFiles.length > 0 ? 'Uploading receipts to Google Drive...' : 'Submitting time entry...';
     hideAllAlerts();
     
     try {
         const formData = collectFormData();
-        await submitToWebApp(formData);
+        const result = await submitToWebApp(formData);
         await sendEmailNotifications(formData);
         
         document.getElementById('loadingSubmit').style.display = 'none';
-        showAlert('success', 'Time entry submitted successfully! You will receive a confirmation email at ' + formData.vendorEmail);
+        
+        let successMsg = 'Time entry submitted successfully! You will receive a confirmation email at ' + formData.vendorEmail;
+        if (result.driveFolder) {
+            successMsg += '\n\nReceipts uploaded to: ' + result.driveFolder;
+        }
+        showAlert('success', successMsg);
         
         setTimeout(() => {
             document.getElementById('timeEntryForm').reset();
@@ -1039,7 +1046,7 @@ function collectFormData() {
         expenseEntries: JSON.stringify(expenseEntries),
         expensesTotal: expensesTotal.toFixed(2),
         receipts: JSON.stringify(uploadedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))),
-        receiptData: uploadedFiles.length > 0 ? JSON.stringify(uploadedFiles) : '',
+        receiptFiles: uploadedFiles.length > 0 ? JSON.stringify(uploadedFiles) : '',
         basePay: basePay.toFixed(2),
         overtimePay: overtimePay.toFixed(2),
         totalPay: totalPay.toFixed(2),
