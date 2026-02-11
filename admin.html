@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WCTE Admin Dashboard - Complete</title>
+    <title>WCTE Admin Dashboard - With Receipt Viewing</title>
     <style>
         * {
             margin: 0;
@@ -368,6 +368,7 @@
         .receipt-item:hover {
             border-color: #667eea;
             background: #e8ebfc;
+            transform: scale(1.05);
         }
         
         .receipt-icon {
@@ -390,6 +391,76 @@
             border-top: 1px solid #dee2e6;
             position: sticky;
             bottom: 0;
+        }
+        
+        /* RECEIPT LIGHTBOX */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .lightbox.show {
+            display: flex;
+        }
+        
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: white;
+            border: none;
+            color: #333;
+            font-size: 2em;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .lightbox-info {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            right: 0;
+            color: white;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .lightbox-download {
+            margin-top: 10px;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
         }
         
         @media (max-width: 768px) {
@@ -501,11 +572,25 @@
         </div>
     </div>
     
+    <!-- RECEIPT LIGHTBOX -->
+    <div id="receiptLightbox" class="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+            <img id="lightboxImage" class="lightbox-image" src="" alt="Receipt">
+            <div class="lightbox-info">
+                <div id="lightboxFilename"></div>
+                <button class="lightbox-download" onclick="downloadReceipt()">📥 Download</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
 const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbz9L9HpPFYqFUeLvJeZ4MmeALiiE4zPdIRcKLAGWPyh8-YvFJz8V43aJ2Nh-4VWYKyt/exec';
 
 let allSubmissions = [];
 let currentSubmission = null;
+let currentReceiptData = null;
+let currentReceiptName = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     loadSubmissions();
@@ -612,6 +697,7 @@ function viewDetails(submissionId) {
     let mileageEntries = [];
     let expenseEntries = [];
     let receipts = [];
+    let receiptData = [];
     
     try {
         mileageEntries = JSON.parse(sub.mileageEntries || '[]');
@@ -623,6 +709,11 @@ function viewDetails(submissionId) {
     
     try {
         receipts = JSON.parse(sub.receipts || '[]');
+    } catch(e) {}
+    
+    // Parse receipt data (base64 images/PDFs)
+    try {
+        receiptData = JSON.parse(sub.receiptData || '[]');
     } catch(e) {}
     
     const mileageTotal = parseFloat(sub.mileageTotal || 0);
@@ -647,16 +738,19 @@ function viewDetails(submissionId) {
         </div>
     `).join('') : '<p style="color: #6c757d;">No expense entries</p>';
     
-    // Build receipts HTML
-    const receiptsHTML = receipts.length > 0 ? `
+    // Build receipts HTML with click functionality
+    const receiptsHTML = receiptData.length > 0 ? `
         <div class="receipt-grid">
-            ${receipts.map((receipt, i) => `
-                <div class="receipt-item" onclick="alert('Receipt viewing coming soon!')">
-                    <div class="receipt-icon">${receipt.type.includes('pdf') ? '📄' : '🖼️'}</div>
+            ${receiptData.map((receipt, i) => {
+                const isPDF = receipt.type.includes('pdf');
+                return `
+                <div class="receipt-item" onclick="viewReceipt(${i})">
+                    <div class="receipt-icon">${isPDF ? '📄' : '🖼️'}</div>
                     <div class="receipt-name">${receipt.name}</div>
                     <small style="color: #6c757d;">${(receipt.size / 1024).toFixed(1)} KB</small>
+                    <div style="margin-top: 10px; color: #667eea; font-weight: 600;">Click to view</div>
                 </div>
-            `).join('')}
+            `}).join('')}
         </div>
     ` : '<p style="color: #6c757d;">No receipts uploaded</p>';
     
@@ -771,7 +865,8 @@ function viewDetails(submissionId) {
         </div>
         
         <div class="detail-section">
-            <h3>Receipts (${receipts.length})</h3>
+            <h3>Receipts (${receiptData.length})</h3>
+            ${receiptData.length > 0 ? '<p style="color: #667eea; margin-bottom: 10px;"><strong>💡 Tip:</strong> Click on any receipt to view or download it</p>' : ''}
             ${receiptsHTML}
         </div>
         
@@ -799,6 +894,64 @@ function viewDetails(submissionId) {
     `;
     
     document.getElementById('detailModal').classList.add('show');
+}
+
+// NEW: View receipt in lightbox
+function viewReceipt(index) {
+    try {
+        const receiptData = JSON.parse(currentSubmission.receiptData || '[]');
+        const receipt = receiptData[index];
+        
+        if (!receipt) {
+            showAlert('error', 'Receipt data not found');
+            return;
+        }
+        
+        currentReceiptData = receipt.data;
+        currentReceiptName = receipt.name;
+        
+        const isPDF = receipt.type.includes('pdf');
+        
+        if (isPDF) {
+            // For PDF, open in new tab
+            const pdfWindow = window.open();
+            pdfWindow.document.write(`
+                <html>
+                <head><title>${receipt.name}</title></head>
+                <body style="margin:0;">
+                    <embed src="${receipt.data}" type="application/pdf" width="100%" height="100%">
+                </body>
+                </html>
+            `);
+        } else {
+            // For images, show in lightbox
+            document.getElementById('lightboxImage').src = receipt.data;
+            document.getElementById('lightboxFilename').textContent = receipt.name;
+            document.getElementById('receiptLightbox').classList.add('show');
+        }
+    } catch (error) {
+        console.error('Error viewing receipt:', error);
+        showAlert('error', 'Failed to load receipt. Please try again.');
+    }
+}
+
+function closeLightbox() {
+    document.getElementById('receiptLightbox').classList.remove('show');
+    currentReceiptData = null;
+    currentReceiptName = null;
+}
+
+function downloadReceipt() {
+    if (!currentReceiptData || !currentReceiptName) return;
+    
+    const link = document.createElement('a');
+    link.href = currentReceiptData;
+    link.download = currentReceiptName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showAlert('success', 'Receipt downloaded!');
 }
 
 function closeModal() {
@@ -928,10 +1081,16 @@ function hideAllAlerts() {
     document.querySelectorAll('.alert').forEach(alert => alert.classList.remove('show'));
 }
 
-// Close modal on outside click
+// Close modals on outside click
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeModal();
+    }
+});
+
+document.getElementById('receiptLightbox').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeLightbox();
     }
 });
     </script>
