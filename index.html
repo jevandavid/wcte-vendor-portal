@@ -959,8 +959,6 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
     }
     
     document.getElementById('loadingSubmit').style.display = 'block';
-    document.getElementById('loadingSubmit').querySelector('.loading-text').textContent = 
-        uploadedFiles.length > 0 ? 'Uploading receipts to Google Drive...' : 'Submitting time entry...';
     hideAllAlerts();
     
     try {
