@@ -135,7 +135,8 @@
         .btn-success { background: #28a745; color: white; }
         .btn-danger { background: #dc3545; color: white; }
         .btn-info { background: #17a2b8; color: white; }
-        .btn-sm { padding: 6px 15px; font-size: 0.85em; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85em; }
         
         .submissions-table {
             background: white;
@@ -193,6 +194,7 @@
         .action-buttons {
             display: flex;
             gap: 5px;
+            flex-wrap: wrap;
         }
         
         .empty-state {
@@ -231,6 +233,15 @@
         .alert.show { display: block; }
         .alert-success { background: #d4edda; border: 2px solid #28a745; color: #155724; }
         .alert-error { background: #f8d7da; border: 2px solid #dc3545; color: #721c24; }
+        
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
         
         @media (max-width: 768px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -344,6 +355,7 @@ async function loadSubmissions() {
         if (data.success && data.entries) {
             allSubmissions = data.entries;
             console.log('Loaded entries:', allSubmissions.length);
+            console.log('Sample entry:', allSubmissions[0]);
             updateStatistics();
             displaySubmissions(allSubmissions);
         } else {
@@ -386,7 +398,14 @@ function displaySubmissions(submissions) {
     emptyState.style.display = 'none';
     tableContainer.style.display = 'block';
     
-    tbody.innerHTML = submissions.map(sub => `
+    tbody.innerHTML = submissions.map(sub => {
+        const isPending = sub.status === 'Pending Review';
+        const isApproved = sub.status === 'Approved';
+        const isPaid = sub.status === 'Paid';
+        
+        console.log(`Entry ${sub.id}: status="${sub.status}", isPending=${isPending}, isApproved=${isApproved}`);
+        
+        return `
         <tr>
             <td>${formatDate(sub.eventDate)}</td>
             <td>
@@ -395,23 +414,36 @@ function displaySubmissions(submissions) {
             </td>
             <td>${sub.eventName}</td>
             <td><strong>$${parseFloat(sub.totalPay).toFixed(2)}</strong></td>
-            <td><span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span></td>
+            <td>
+                <span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span>
+                <div class="debug-info" style="display:none;">Status: "${sub.status}"</div>
+            </td>
             <td>
                 <div class="action-buttons">
-                    ${sub.status === 'Pending Review' ? `
+                    ${isPending ? `
                         <button class="btn btn-success btn-sm" onclick="updateStatus('${sub.id}', 'Approved')">✓ Approve</button>
+                        <button class="btn btn-danger btn-sm" onclick="updateStatus('${sub.id}', 'Rejected')">✗ Reject</button>
                     ` : ''}
-                    ${sub.status === 'Approved' ? `
+                    ${isApproved ? `
                         <button class="btn btn-info btn-sm" onclick="updateStatus('${sub.id}', 'Paid')">💳 Mark Paid</button>
+                        <button class="btn btn-warning btn-sm" onclick="updateStatus('${sub.id}', 'Pending Review')">↩️ Revert</button>
+                    ` : ''}
+                    ${isPaid ? `
+                        <span style="color: #28a745;">✓ Payment Complete</span>
                     ` : ''}
                 </div>
             </td>
         </tr>
-    `).join('');
+    `;
+    }).join('');
 }
 
 async function updateStatus(entryId, newStatus) {
-    if (!confirm(`Are you sure you want to mark this entry as ${newStatus}?`)) return;
+    const actionText = newStatus === 'Rejected' ? 'reject' : 
+                      newStatus === 'Paid' ? 'mark as paid' : 
+                      newStatus === 'Pending Review' ? 'revert to pending' : 'approve';
+    
+    if (!confirm(`Are you sure you want to ${actionText} this entry?`)) return;
     
     try {
         const response = await fetch(WEBAPP_URL, {
@@ -428,7 +460,7 @@ async function updateStatus(entryId, newStatus) {
         const data = await response.json();
         
         if (data.success) {
-            showAlert('success', `Entry updated to ${newStatus} successfully!`);
+            showAlert('success', `Entry ${actionText}d successfully!`);
             await loadSubmissions();
         } else {
             throw new Error(data.error || 'Update failed');
