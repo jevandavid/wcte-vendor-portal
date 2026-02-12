@@ -1541,7 +1541,8 @@ async function sendEmailNotifications(data, result) {
     const payPeriod = `${data.eventDate} - ${data.eventName}`;
     
     // Calculate payment totals
-    const timeEntryPay = (parseFloat(data.basePay || 0) + parseFloat(data.overtimePay || 0)).toFixed(2);
+    // Use timeEntriesTotal which is the sum of ALL time entries (not just first one)
+    const timeEntryPay = parseFloat(data.timeEntriesTotal || 0).toFixed(2);
     const mileageTotal = parseFloat(data.mileageTotal || 0).toFixed(2);
     const expensesTotal = parseFloat(data.expensesTotal || 0).toFixed(2);
     const grandTotal = parseFloat(data.totalPay || 0).toFixed(2);
@@ -1554,6 +1555,10 @@ async function sendEmailNotifications(data, result) {
     
     // Send office notification with all template variables
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
+        // Email routing
+        subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
+        to_email: 'office@wctedance.com',
+        
         // Vendor information
         vendor_name: data.vendorName,
         vendor_email: data.vendorEmail,
@@ -1594,6 +1599,7 @@ async function sendEmailNotifications(data, result) {
     
     // Send vendor confirmation email with all required fields
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
+        subject: `WCTE Submission Confirmed - ${data.eventName}`,
         to_email: data.vendorEmail,
         vendor_name: data.vendorName,
         submission_type: submissionType,
