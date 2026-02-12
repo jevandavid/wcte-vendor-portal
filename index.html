@@ -795,28 +795,6 @@ let expenseEntries = [];
                     </div>
                 ` : ''}
                 
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Role Performed *</label>
-                    <select onchange="updateTimeEntry(${entry.id}, 'rolePerformed', this.value)"
-                            style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
-                            required>
-                        <option value="">Select Role...</option>
-                        <option value="Choreographer" ${entry.rolePerformed === 'Choreographer' ? 'selected' : ''}>Choreographer</option>
-                        <option value="Judge" ${entry.rolePerformed === 'Judge' ? 'selected' : ''}>Judge</option>
-                        <option value="Instructor" ${entry.rolePerformed === 'Instructor' ? 'selected' : ''}>Instructor</option>
-                        <option value="Assistant" ${entry.rolePerformed === 'Assistant' ? 'selected' : ''}>Assistant</option>
-                        <option value="Director" ${entry.rolePerformed === 'Director' ? 'selected' : ''}>Director</option>
-                        <option value="Other" ${entry.rolePerformed === 'Other' ? 'selected' : ''}>Other</option>
-                    </select>
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Work Details</label>
-                    <textarea onchange="updateTimeEntry(${entry.id}, 'workDetails', this.value)"
-                              placeholder="Describe the work performed this day..."
-                              style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px; min-height: 80px;">${entry.workDetails}</textarea>
-                </div>
-                
                 <div style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); padding: 15px; border-radius: 6px; text-align: right;">
                     <strong style="color: #667eea;">This Day's Pay: $${(entry.basePay + entry.overtimePay).toFixed(2)}</strong>
                 </div>
@@ -851,7 +829,6 @@ let expenseEntries = [];
     }
 
     // V3: Updated calculatePayment to handle multiple time entries
-    const originalCalculatePayment = calculatePayment;
     calculatePayment = function() {
         if (!currentVendor) return;
         
@@ -893,35 +870,26 @@ let expenseEntries = [];
         const expensesTotal = expenseEntries.reduce((sum, e) => sum + e.amount, 0);
         const grandTotal = totalBase + totalOvertime + mileageTotal + expensesTotal;
         
-        // Update displays
+        // Update time entries total display
         const timeTotal = document.getElementById('timeEntriesTotal');
         if (timeTotal) {
             timeTotal.textContent = `$${(totalBase + totalOvertime).toFixed(2)}`;
         }
         
-        const summaryEl = document.getElementById('paymentSummary');
-        if (summaryEl) {
-            summaryEl.innerHTML = `
-                ${mode === 'time_and_expenses' ? `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span>Time Entry Pay:</span>
-                        <strong>$${(totalBase + totalOvertime).toFixed(2)}</strong>
-                    </div>
-                ` : ''}
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>Mileage Reimbursement:</span>
-                    <strong>$${mileageTotal.toFixed(2)}</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #dee2e6;">
-                    <span>Expense Reimbursement:</span>
-                    <strong>$${expensesTotal.toFixed(2)}</strong>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 1.3em;">
-                    <strong>TOTAL GROSS PAY:</strong>
-                    <strong style="color: #28a745;">$${grandTotal.toFixed(2)}</strong>
-                </div>
-            `;
-        }
+        // Update payment calculation box
+        const calcBase = document.getElementById('calcBasePay');
+        const calcOT = document.getElementById('calcOvertimePay');
+        const calcOTRow = document.getElementById('calcOvertimeRow');
+        const calcMileage = document.getElementById('calcMileage');
+        const calcExpenses = document.getElementById('calcExpenses');
+        const calcTotal = document.getElementById('calcTotal');
+        
+        if (calcBase) calcBase.textContent = `$${totalBase.toFixed(2)}`;
+        if (calcOT) calcOT.textContent = `$${totalOvertime.toFixed(2)}`;
+        if (calcOTRow) calcOTRow.style.display = totalOvertime > 0 ? 'flex' : 'none';
+        if (calcMileage) calcMileage.textContent = `$${mileageTotal.toFixed(2)}`;
+        if (calcExpenses) calcExpenses.textContent = `$${expensesTotal.toFixed(2)}`;
+        if (calcTotal) calcTotal.textContent = `$${grandTotal.toFixed(2)}`;
     };
 
     // V3: Initialize first time entry after vendor loads
@@ -1034,6 +1002,7 @@ function addMileageEntry() {
     const id = Date.now();
     mileageEntries.push({ id, date: '', miles: 0 });
     renderMileageEntries();
+    calculatePayment();
 }
 
 function removeMileageEntry(id) {
@@ -1079,6 +1048,7 @@ function addExpenseEntry() {
     const id = Date.now();
     expenseEntries.push({ id, date: '', amount: 0, description: '' });
     renderExpenseEntries();
+    calculatePayment();
 }
 
 function removeExpenseEntry(id) {
@@ -1388,6 +1358,7 @@ function collectFormData() {
         const eventDateField = document.getElementById('eventDate');
         const eventNameField = document.getElementById('eventName');
         const eventLocationField = document.getElementById('eventLocation');
+        const rolePerformedField = document.getElementById('rolePerformed');
         const notesField = document.getElementById('additionalNotes');
         
         return {
@@ -1399,6 +1370,7 @@ function collectFormData() {
             eventDate: eventDateField ? eventDateField.value : '',
             eventName: eventNameField ? eventNameField.value : '',
             eventLocation: eventLocationField ? eventLocationField.value : '',
+            rolePerformed: rolePerformedField ? rolePerformedField.value : '',
             
             // V3: Time entries array
             timeEntries: JSON.stringify(timeEntries),
