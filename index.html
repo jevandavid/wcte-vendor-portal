@@ -395,7 +395,7 @@
                 <form id="timeEntryForm">
                     <!-- V3: FORM MODE SELECTOR -->
                     <div class="form-section" style="margin-bottom: 30px;">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">ðŸ“‹ Submission Type</h3>
+                        <h3 style="color: #667eea; margin-bottom: 15px;">&#128203; Submission Type</h3>
                         <div style="background: #f8f9fa; padding: 25px; border-radius: 8px;">
                             <label style="display: flex; align-items: flex-start; margin-bottom: 20px; cursor: pointer; padding: 15px; background: white; border-radius: 6px; border: 2px solid #dee2e6; transition: border-color 0.3s;">
                                 <input type="radio" name="submissionType" value="time_and_expenses" checked 
@@ -403,7 +403,7 @@
                                        style="margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; cursor: pointer;">
                                 <div>
                                     <div style="font-size: 1.1em; font-weight: 600; color: #667eea; margin-bottom: 5px;">
-                                        â° Time Entry + Expenses
+                                        &#9200; Time Entry + Expenses
                                     </div>
                                     <div style="font-size: 0.9em; color: #6c757d;">
                                         Track hours worked for one or more days and submit expenses
@@ -417,7 +417,7 @@
                                        style="margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; cursor: pointer;">
                                 <div>
                                     <div style="font-size: 1.1em; font-weight: 600; color: #ff6b6b; margin-bottom: 5px;">
-                                        ðŸ’° Expense Reporting Only
+                                        &#128176; Expense Reporting Only
                                     </div>
                                     <div style="font-size: 0.9em; color: #6c757d;">
                                         Submit mileage and expenses without time tracking
@@ -529,7 +529,7 @@
                     <!-- V3: MULTIPLE TIME ENTRIES SECTION -->
                     <div id="timeEntrySection" class="form-section" style="margin-bottom: 30px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h3 style="color: #667eea; margin: 0;">â° Time Entry Details</h3>
+                            <h3 style="color: #667eea; margin: 0;">&#9200; Time Entry Details</h3>
                             <button type="button" onclick="addTimeEntry()" class="btn" 
                                     style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
                                 + Add Day
@@ -578,7 +578,7 @@
                         <label for="receiptUpload">Upload Receipts (Optional)</label>
                         <div class="file-upload-area" onclick="document.getElementById('receiptUpload').click()">
                             <input type="file" id="receiptUpload" multiple accept="image/*,.pdf" onchange="handleFileSelect(event)">
-                            <p>ðŸ“Ž Click to upload receipts</p>
+                            <p>&#128269; Click to upload receipts</p>
                             <p class="helper-text">Images (JPG, PNG) or PDF files</p>
                         </div>
                         <div id="uploadedFiles" class="uploaded-files"></div>
@@ -1144,7 +1144,7 @@ function renderUploadedFiles() {
     
     container.innerHTML = uploadedFiles.map((file, index) => `
         <div class="file-item">
-            <span class="file-item-name">ðŸ“„ ${file.name}</span>
+            <span class="file-item-name">&#128196; ${file.name}</span>
             <span class="file-item-size">${(file.size / 1024).toFixed(1)} KB</span>
             <button type="button" class="btn btn-remove" onclick="removeFile(${index})">Remove</button>
         </div>
@@ -1163,22 +1163,12 @@ function calculatePayment() {
     
     let basePay = 0, overtimePay = 0;
     
-    switch(currentVendor.payType) {
-        case 'hourly':
-            const result = calculateHourlyPay();
-            basePay = result.basePay;
-            overtimePay = result.overtimePay;
-            document.getElementById('hoursWorked').value = (result.regularHours + result.overtimeHours).toFixed(2) + ' hours';
-            break;
-        case 'daily':
-            basePay = calculateDailyPay();
-            break;
-        case 'routine':
-            basePay = calculateRoutinePay();
-            break;
-        case 'fixed':
-            basePay = currentVendor.fixedAmount;
-            break;
+    // V3: Sum up all time entries
+    if (timeEntries && timeEntries.length > 0) {
+        timeEntries.forEach(entry => {
+            basePay += entry.basePay || 0;
+            overtimePay += entry.overtimePay || 0;
+        });
     }
     
     const mileageTotal = mileageEntries.reduce((sum, e) => sum + (e.miles * 0.67), 0);
