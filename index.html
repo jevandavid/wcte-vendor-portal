@@ -1437,48 +1437,184 @@ function collectFormData() {
     return await response.json();
 }
 
+// ============================================================================
+// FIXED: sendEmailNotifications - Populates ALL email template variables
+// ============================================================================
 async function sendEmailNotifications(data) {
-    const mileageDetails = mileageEntries.map((e, i) => 
-        `Trip ${i+1}: ${e.date || 'No date'} - ${e.miles} miles = $${(e.miles * 0.67).toFixed(2)}`
-    ).join('\n');
-    
-    const expenseDetails = expenseEntries.map((e, i) => 
-        `Expense ${i+1}: ${e.date || 'No date'} - ${e.description || 'No description'} = $${e.amount.toFixed(2)}`
-    ).join('\n');
-    
-    const officeEmail = `WCTE TIME ENTRY
-Vendor: ${data.vendorName}
-Event: ${data.eventName} (${data.eventDate})
-Location: ${data.eventLocation}
-Role: ${data.rolePerformed}
-Work: ${data.workDetails}
+    try {
+        // Build office email HTML (existing function)
+        const officeEmail = buildOfficeEmailHTML(data);
 
-PAYMENT:
-Base Pay: $${data.basePay}
-OT Pay: $${data.overtimePay}
-Mileage: $${data.mileageTotal}
-${mileageDetails}
-Expenses: $${data.expensesTotal}
-${expenseDetails}
-TOTAL: $${data.totalPay}
+        // Calculate totals for email display
+        const timeEntryPay = data.totalBasePay || 0;
+        const mileageTotal = data.totalMileage || 0;
+        const expensesTotal = data.totalExpenses || 0;
+        const grandTotal = data.totalPay || 0;
 
-Receipts: ${uploadedFiles.length} file(s) attached`;
-    
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
-        from_name: data.vendorName,
-        from_email: data.vendorEmail,
-        subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
-        message: officeEmail,
-        to_email: 'office@wctedance.com'
-    });
-    
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
-        to_email: data.vendorEmail,
-        vendor_name: data.vendorName,
-        event_name: data.eventName,
-        event_date: data.eventDate,
-        total_amount: data.totalPay
-    });
+        // Format currency
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(amount);
+        };
+
+        // Build time entries breakdown text
+        let timeEntriesBreakdown = '';
+        if (data.timeEntries && data.timeEntries.length > 0) {
+            timeEntriesBreakdown = data.timeEntries.map(entry => {
+                const date = new Date(entry.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                return `${date}: ${entry.clockIn} - ${entry.clockOut} (${entry.totalHours} hrs)`;
+            }).join('<br>');
+        } else {
+            timeEntriesBreakdown = 'No time entries (Expense-only submission)';
+        }
+
+        // Build mileage details text
+        let mileageDetails = 'None';
+        if (data.mileageEntries && data.mileageEntries.length > 0) {
+            mileageDetails = data.mileageEntries.map(entry => 
+                `${entry.miles} miles @ ${formatCurrency(entry.rate)}/mi = ${formatCurrency(entry.total)}`
+            ).join('<br>');
+        }
+
+        // Build expense details text
+        let expenseDetails = 'None';
+        if (data.expenseEntries && data.expenseEntries.length > 0) {
+            expenseDetails = data.expenseEntries.map(entry => 
+                `${entry.description}: ${formatCurrency(entry.amount)}`
+            ).join('<br>');
+        }
+
+        // Build receipt info text
+        let receiptInfo = 'No receipts uploaded';
+        if (data.receiptFiles && data.receiptFiles.length > 0) {
+            receiptInfo = `${data.receiptFiles.length} file(s) uploaded to Google Drive`;
+        }
+
+        // Determine submission type display text
+        const submissionTypeText = data.submissionType === 'expenses_only' 
+            ? 'Expense Reporting Only' 
+            : 'Time Entry + Expenses';
+
+        // Generate confirmation number (timestamp-based)
+        const confirmationNumber = `WCTE-${Date.now().toString().slice(-8)}`;
+
+        // Get current timestamp
+        const submissionTimestamp = new Date().toLocaleString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZoneName: 'short'
+        });
+
+        // Get current year
+        const currentYear = new Date().getFullYear();
+
+        // Determine W-9 status for office email
+        const w9Status = currentVendor?.w9OnFile ? 'On File' : 'Missing';
+        const w9StatusIcon = currentVendor?.w9OnFile ? 'âœ…' : 'âŒ';
+        const w9BgColor = currentVendor?.w9OnFile ? '#e8f5e9' : '#ffebee';
+        const w9BorderColor = currentVendor?.w9OnFile ? '#c8e6c9' : '#ffcdd2';
+        const w9TextColor = currentVendor?.w9OnFile ? '#2e7d32' : '#c62828';
+
+        // Build vendor notes
+        const vendorNotes = data.notes || 'No additional notes provided';
+
+        // Admin portal URL (update this to your actual admin portal URL)
+        const adminPortalUrl = 'https://jevandavid.github.io/wcte-vendor-portal/admin';
+
+        // ========================================================================
+        // SEND EMAIL #1: Office Notification
+        // ========================================================================
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
+            // Basic info
+            vendor_name: data.vendorName,
+            vendor_email: data.vendorEmail,
+            submission_type: submissionTypeText,
+            submission_timestamp: submissionTimestamp,
+
+            // Time entry details
+            pay_period: data.eventName || 'N/A',
+            total_hours: data.totalHours || 0,
+            regular_hours: data.regularHours || 0,
+            overtime_hours: data.overtimeHours || 0,
+            time_entries_breakdown: timeEntriesBreakdown,
+
+            // Payment summary
+            time_entry_pay: formatCurrency(timeEntryPay),
+            mileage_total: formatCurrency(mileageTotal),
+            expenses_total: formatCurrency(expensesTotal),
+            grand_total: formatCurrency(grandTotal),
+
+            // Mileage & expenses
+            mileage_details: mileageDetails,
+            expense_details: expenseDetails,
+            receipt_info: receiptInfo,
+
+            // W-9 status
+            w9_status: w9Status,
+            w9_status_icon: w9StatusIcon,
+            w9_bg_color: w9BgColor,
+            w9_border_color: w9BorderColor,
+            w9_text_color: w9TextColor,
+
+            // Notes & admin
+            vendor_notes: vendorNotes,
+            admin_portal_url: adminPortalUrl,
+
+            // Email routing
+            to_email: 'office@wctedance.com'
+        });
+
+        console.log('âœ… Office notification email sent successfully');
+
+        // ========================================================================
+        // SEND EMAIL #2: Vendor Confirmation
+        // ========================================================================
+        const vendorEmail = data.vendorEmail || currentVendor?.email || '';
+
+        if (!vendorEmail) {
+            console.warn('âš ï¸ No vendor email found - skipping confirmation email');
+            return;
+        }
+
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
+            // Recipient
+            to_email: vendorEmail,
+
+            // Basic info
+            vendor_name: data.vendorName,
+            submission_type: submissionTypeText,
+            pay_period: data.eventName || 'N/A',
+            submission_timestamp: submissionTimestamp,
+            confirmation_number: confirmationNumber,
+
+            // Payment summary
+            time_entry_pay: formatCurrency(timeEntryPay),
+            mileage_total: formatCurrency(mileageTotal),
+            expenses_total: formatCurrency(expensesTotal),
+            grand_total: formatCurrency(grandTotal),
+
+            // Footer
+            current_year: currentYear
+        });
+
+        console.log('âœ… Vendor confirmation email sent successfully');
+
+    } catch (error) {
+        console.error('âŒ Email notification error:', error);
+        throw error;
+    }
 }
 
 function showSection(sectionId) {
