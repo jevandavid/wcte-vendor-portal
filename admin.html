@@ -847,14 +847,16 @@ function renderTimeEntries(sub) {
             const workMinutes = totalMinutes - (entry.breakMinutes || 0);
             const totalHours = workMinutes / 60;
             
-            // Check if vendor has overtime eligibility from vendors sheet
-            // For now, assume standard 8 hour threshold (we can enhance this later)
-            const overtimeThreshold = 8;
-            if (totalHours > overtimeThreshold) {
+            // Use vendor's actual overtime threshold from Vendors sheet Column M
+            const overtimeThreshold = sub.overtimeThreshold || 8;
+            const isOvertimeEligible = sub.overtimeEligible || false;
+            
+            if (isOvertimeEligible && totalHours > overtimeThreshold) {
                 regularHours = overtimeThreshold;
                 overtimeHours = totalHours - overtimeThreshold;
             } else {
                 regularHours = totalHours;
+                overtimeHours = 0;
             }
         }
         
@@ -882,7 +884,7 @@ function renderTimeEntries(sub) {
                             <div class="time-detail-label">Regular Hours</div>
                             <div class="time-detail-value">${regularHours.toFixed(2)} hrs</div>
                         </div>
-                        ${overtimeHours > 0 ? `
+                        ${(sub.overtimeEligible && overtimeHours > 0) ? `
                             <div class="time-detail-item">
                                 <div class="time-detail-label">Overtime Hours</div>
                                 <div class="time-detail-value">${overtimeHours.toFixed(2)} hrs</div>
@@ -914,7 +916,7 @@ function renderTimeEntries(sub) {
                 
                 <div class="time-entry-pay">
                     ${entry.basePay > 0 ? `<div>Base Pay: <strong>$${entry.basePay.toFixed(2)}</strong></div>` : ''}
-                    ${entry.overtimePay > 0 ? `<div>Overtime: <strong>$${entry.overtimePay.toFixed(2)}</strong></div>` : ''}
+                    ${(sub.overtimeEligible && entry.overtimePay > 0) ? `<div>Overtime: <strong>$${entry.overtimePay.toFixed(2)}</strong></div>` : ''}
                     <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #667eea40;">
                         This Day's Total: <strong>$${totalPay.toFixed(2)}</strong>
                     </div>
