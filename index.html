@@ -924,14 +924,8 @@ let expenseEntries = [];
         }
     };
 
-    // V3: Initialize time entries when vendor loads
-    const originalLoadVendor = loadVendor;
-    loadVendor = async function(email) {
-        await originalLoadVendor(email);
-        if (currentVendor && timeEntries.length === 0) {
-            addTimeEntry();
-        }
-    };
+    // V3: Initialize first time entry after vendor loads
+    // This will be called by the actual loadVendor function
 
 let uploadedFiles = [];
 
@@ -996,34 +990,16 @@ function showTimeEntryForm() {
     
     hideAllTimeEntryFields();
     
-    document.getElementById('clockIn').required = false;
-    document.getElementById('clockOut').required = false;
-    document.getElementById('dayType').required = false;
-    document.getElementById('routineCount').required = false;
-    document.getElementById('confirmFixed').required = false;
-    
-    switch(currentVendor.payType) {
-        case 'hourly':
-            document.getElementById('hourlyFields').classList.add('show');
-            document.getElementById('clockIn').required = true;
-            document.getElementById('clockOut').required = true;
-            break;
-        case 'daily':
-            document.getElementById('dailyFields').classList.add('show');
-            document.getElementById('dayType').required = true;
-            break;
-        case 'routine':
-            document.getElementById('routineFields').classList.add('show');
-            document.getElementById('routineCount').required = true;
-            break;
-        case 'fixed':
-            document.getElementById('fixedFields').classList.add('show');
-            document.getElementById('fixedRateDisplay').textContent = `$${currentVendor.fixedAmount.toFixed(2)}`;
-            document.getElementById('confirmFixed').required = true;
-            break;
-    }
+    // V3: Old single-entry fields don't exist anymore, skip these
+    // The time entry fields are now dynamically generated in renderTimeEntries()
     
     showSection('sectionTimeEntry');
+    
+    // V3: Initialize first time entry when form loads
+    if (timeEntries.length === 0) {
+        addTimeEntry();
+    }
+    
     calculatePayment();
 }
 
@@ -1239,9 +1215,16 @@ function calculatePayment() {
 }
 
 function calculateHourlyPay() {
-    const clockIn = document.getElementById('clockIn').value;
-    const clockOut = document.getElementById('clockOut').value;
-    const breakMinutes = parseFloat(document.getElementById('breakMinutes').value) || 0;
+    // V3: This function is deprecated - kept for compatibility
+    const clockInEl = document.getElementById('clockIn');
+    const clockOutEl = document.getElementById('clockOut');
+    const breakMinutesEl = document.getElementById('breakMinutes');
+    
+    if (!clockInEl || !clockOutEl) return { basePay: 0, overtimePay: 0, regularHours: 0, overtimeHours: 0 };
+    
+    const clockIn = clockInEl.value;
+    const clockOut = clockOutEl.value;
+    const breakMinutes = breakMinutesEl ? (parseFloat(breakMinutesEl.value) || 0) : 0;
     
     if (!clockIn || !clockOut) return { basePay: 0, overtimePay: 0, regularHours: 0, overtimeHours: 0 };
     
@@ -1267,12 +1250,18 @@ function calculateHourlyPay() {
 }
 
 function calculateDailyPay() {
-    const dayType = document.getElementById('dayType').value;
+    // V3: This function is deprecated - kept for compatibility
+    const dayTypeEl = document.getElementById('dayType');
+    if (!dayTypeEl) return 0;
+    const dayType = dayTypeEl.value;
     return dayType === 'full' ? currentVendor.fullDayRate : dayType === 'half' ? currentVendor.halfDayRate : 0;
 }
 
 function calculateRoutinePay() {
-    const routineCount = parseFloat(document.getElementById('routineCount').value) || 0;
+    // V3: This function is deprecated - kept for compatibility
+    const routineCountEl = document.getElementById('routineCount');
+    if (!routineCountEl) return 0;
+    const routineCount = parseFloat(routineCountEl.value) || 0;
     return routineCount * currentVendor.perRoutineRate;
 }
 
