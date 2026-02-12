@@ -395,7 +395,7 @@
                 <form id="timeEntryForm">
                     <!-- V3: FORM MODE SELECTOR -->
                     <div class="form-section" style="margin-bottom: 30px;">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">📋 Submission Type</h3>
+                        <h3 style="color: #667eea; margin-bottom: 15px;">ðŸ“‹ Submission Type</h3>
                         <div style="background: #f8f9fa; padding: 25px; border-radius: 8px;">
                             <label style="display: flex; align-items: flex-start; margin-bottom: 20px; cursor: pointer; padding: 15px; background: white; border-radius: 6px; border: 2px solid #dee2e6; transition: border-color 0.3s;">
                                 <input type="radio" name="submissionType" value="time_and_expenses" checked 
@@ -403,7 +403,7 @@
                                        style="margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; cursor: pointer;">
                                 <div>
                                     <div style="font-size: 1.1em; font-weight: 600; color: #667eea; margin-bottom: 5px;">
-                                        ⏰ Time Entry + Expenses
+                                        â° Time Entry + Expenses
                                     </div>
                                     <div style="font-size: 0.9em; color: #6c757d;">
                                         Track hours worked for one or more days and submit expenses
@@ -417,7 +417,7 @@
                                        style="margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; cursor: pointer;">
                                 <div>
                                     <div style="font-size: 1.1em; font-weight: 600; color: #ff6b6b; margin-bottom: 5px;">
-                                        💰 Expense Reporting Only
+                                        ðŸ’° Expense Reporting Only
                                     </div>
                                     <div style="font-size: 0.9em; color: #6c757d;">
                                         Submit mileage and expenses without time tracking
@@ -529,7 +529,7 @@
                     <!-- V3: MULTIPLE TIME ENTRIES SECTION -->
                     <div id="timeEntrySection" class="form-section" style="margin-bottom: 30px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h3 style="color: #667eea; margin: 0;">⏰ Time Entry Details</h3>
+                            <h3 style="color: #667eea; margin: 0;">â° Time Entry Details</h3>
                             <button type="button" onclick="addTimeEntry()" class="btn" 
                                     style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
                                 + Add Day
@@ -578,7 +578,7 @@
                         <label for="receiptUpload">Upload Receipts (Optional)</label>
                         <div class="file-upload-area" onclick="document.getElementById('receiptUpload').click()">
                             <input type="file" id="receiptUpload" multiple accept="image/*,.pdf" onchange="handleFileSelect(event)">
-                            <p>📎 Click to upload receipts</p>
+                            <p>ðŸ“Ž Click to upload receipts</p>
                             <p class="helper-text">Images (JPG, PNG) or PDF files</p>
                         </div>
                         <div id="uploadedFiles" class="uploaded-files"></div>
@@ -734,7 +734,7 @@ let expenseEntries = [];
                     ${canRemove ? `
                         <button type="button" onclick="removeTimeEntry(${entry.id})" 
                                 style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                            × Remove
+                            Ã— Remove
                         </button>
                     ` : ''}
                 </div>
@@ -1130,7 +1130,7 @@ function renderUploadedFiles() {
     
     container.innerHTML = uploadedFiles.map((file, index) => `
         <div class="file-item">
-            <span class="file-item-name">📄 ${file.name}</span>
+            <span class="file-item-name">ðŸ“„ ${file.name}</span>
             <span class="file-item-size">${(file.size / 1024).toFixed(1)} KB</span>
             <button type="button" class="btn btn-remove" onclick="removeFile(${index})">Remove</button>
         </div>
@@ -1438,46 +1438,147 @@ function collectFormData() {
 }
 
 async function sendEmailNotifications(data) {
-    const mileageDetails = mileageEntries.map((e, i) => 
-        `Trip ${i+1}: ${e.date || 'No date'} - ${e.miles} miles = $${(e.miles * 0.67).toFixed(2)}`
-    ).join('\n');
+    // Format mileage details for email
+    const mileageDetails = mileageEntries.length > 0 
+        ? mileageEntries.map((e, i) => 
+            `${e.date || 'No date'}: ${e.from || ''} to ${e.to || ''} - ${e.miles} miles ($${(e.miles * 0.67).toFixed(2)})`
+          ).join('<br>')
+        : 'No mileage entries';
     
-    const expenseDetails = expenseEntries.map((e, i) => 
-        `Expense ${i+1}: ${e.date || 'No date'} - ${e.description || 'No description'} = $${e.amount.toFixed(2)}`
-    ).join('\n');
+    // Format expense details for email
+    const expenseDetails = expenseEntries.length > 0
+        ? expenseEntries.map((e, i) => 
+            `${e.date || 'No date'}: ${e.description || 'No description'} - $${e.amount.toFixed(2)}`
+          ).join('<br>')
+        : 'No expense entries';
     
-    const officeEmail = `WCTE TIME ENTRY
-Vendor: ${data.vendorName}
-Event: ${data.eventName} (${data.eventDate})
-Location: ${data.eventLocation}
-Role: ${data.rolePerformed}
-Work: ${data.workDetails}
-
-PAYMENT:
-Base Pay: $${data.basePay}
-OT Pay: $${data.overtimePay}
-Mileage: $${data.mileageTotal}
-${mileageDetails}
-Expenses: $${data.expensesTotal}
-${expenseDetails}
-TOTAL: $${data.totalPay}
-
-Receipts: ${uploadedFiles.length} file(s) attached`;
+    // Format receipt info
+    const receiptInfo = uploadedFiles.length > 0
+        ? `${uploadedFiles.length} receipt(s) attached`
+        : 'No receipts attached';
     
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
-        from_name: data.vendorName,
-        from_email: data.vendorEmail,
-        subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
-        message: officeEmail,
-        to_email: 'office@wctedance.com'
+    // Calculate hours from time entries (V3) or single entry
+    let totalHours = 0;
+    let regularHours = 0;
+    let overtimeHours = 0;
+    let dailyBreakdown = '';
+    
+    if (data.timeEntries && data.timeEntries !== '[]') {
+        // V3: Multiple time entries
+        const entries = JSON.parse(data.timeEntries);
+        dailyBreakdown = entries.map((entry, i) => {
+            const hours = parseFloat(entry.hours || 0);
+            const regHrs = Math.min(hours, currentVendor.overtimeThreshold || 8);
+            const otHrs = Math.max(0, hours - (currentVendor.overtimeThreshold || 8));
+            
+            totalHours += hours;
+            regularHours += regHrs;
+            overtimeHours += otHrs;
+            
+            return `<strong>Day ${i + 1} (${entry.date || 'No date'}):</strong><br>` +
+                   `${entry.clockIn || 'N/A'} - ${entry.clockOut || 'N/A'}<br>` +
+                   `${entry.rolePerformed || 'No role'} - ${hours.toFixed(2)} hrs<br>` +
+                   `Base: $${entry.basePay || '0.00'}, OT: $${entry.overtimePay || '0.00'}`;
+        }).join('<br><br>');
+    } else {
+        // Legacy: Single time entry
+        if (data.clockIn && data.clockOut && data.clockIn !== 'N/A' && data.clockOut !== 'N/A') {
+            const clockIn = new Date(`1970-01-01T${data.clockIn}`);
+            const clockOut = new Date(`1970-01-01T${data.clockOut}`);
+            const breakMins = parseInt(data.breakMinutes) || 0;
+            const diffMs = clockOut - clockIn;
+            const hours = (diffMs / (1000 * 60 * 60)) - (breakMins / 60);
+            
+            totalHours = Math.max(0, hours);
+            regularHours = Math.min(totalHours, currentVendor.overtimeThreshold || 8);
+            overtimeHours = Math.max(0, totalHours - (currentVendor.overtimeThreshold || 8));
+            
+            dailyBreakdown = `<strong>${data.eventDate}:</strong><br>` +
+                           `${data.clockIn} - ${data.clockOut} (${breakMins} min break)<br>` +
+                           `${data.rolePerformed || 'No role'} - ${totalHours.toFixed(2)} hrs<br>` +
+                           `Base: $${data.basePay || '0.00'}, OT: $${data.overtimePay || '0.00'}`;
+        } else {
+            dailyBreakdown = 'No time entry details provided';
+        }
+    }
+    
+    // Determine W-9 status
+    const w9Status = currentVendor.w9OnFile ? 'On File' : 'Not Submitted';
+    const w9StatusIcon = currentVendor.w9OnFile ? '✅' : '⚠️';
+    const w9BgColor = currentVendor.w9OnFile ? '#e8f5e9' : '#fff3e0';
+    const w9BorderColor = currentVendor.w9OnFile ? '#c8e6c9' : '#ffe0b2';
+    const w9TextColor = currentVendor.w9OnFile ? '#2e7d32' : '#e65100';
+    
+    // Format submission timestamp
+    const submissionTimestamp = new Date().toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
     });
     
+    // Create pay period string
+    const payPeriod = `${data.eventDate} - ${data.eventName}`;
+    
+    // Calculate payment totals
+    const timeEntryPay = (parseFloat(data.basePay || 0) + parseFloat(data.overtimePay || 0)).toFixed(2);
+    const mileageTotal = parseFloat(data.mileageTotal || 0).toFixed(2);
+    const expensesTotal = parseFloat(data.expensesTotal || 0).toFixed(2);
+    const grandTotal = parseFloat(data.totalPay || 0).toFixed(2);
+    
+    // Determine submission type
+    const submissionType = data.submissionType === 'expenses_only' ? 'EXPENSE REPORT ONLY' : 'TIME ENTRY + EXPENSES';
+    
+    // Send office notification with all template variables
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
+        // Vendor information
+        vendor_name: data.vendorName,
+        vendor_email: data.vendorEmail,
+        submission_timestamp: submissionTimestamp,
+        
+        // Time entry details
+        pay_period: payPeriod,
+        total_hours: totalHours.toFixed(2),
+        regular_hours: regularHours.toFixed(2),
+        overtime_hours: overtimeHours.toFixed(2),
+        
+        // Daily breakdown
+        daily_breakdown: dailyBreakdown,
+        
+        // Payment summary
+        time_entry_pay: `$${timeEntryPay}`,
+        mileage_total: `$${mileageTotal}`,
+        expenses_total: `$${expensesTotal}`,
+        grand_total: `$${grandTotal}`,
+        
+        // Mileage & expenses
+        mileage_details: mileageDetails,
+        expense_details: expenseDetails,
+        receipt_info: receiptInfo,
+        
+        // W-9 status
+        w9_status: w9Status,
+        w9_status_icon: w9StatusIcon,
+        w9_bg_color: w9BgColor,
+        w9_border_color: w9BorderColor,
+        w9_text_color: w9TextColor,
+        
+        // Additional info
+        vendor_notes: data.additionalNotes || 'No additional notes',
+        admin_portal_url: window.location.origin + '/admin-V3-COMPLETE.html',
+        submission_type: submissionType
+    });
+    
+    // Send vendor confirmation email
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
         to_email: data.vendorEmail,
         vendor_name: data.vendorName,
         event_name: data.eventName,
         event_date: data.eventDate,
-        total_amount: data.totalPay
+        total_amount: `$${grandTotal}`
     });
 }
 
