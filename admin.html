@@ -475,6 +475,114 @@
             .modal-content { margin: 0; max-height: 100vh; }
             .receipt-grid { grid-template-columns: 1fr; }
         }
+        
+        /* ============================================ */
+        /* V3: TIME ENTRY CARDS & W-9 STATUS */
+        /* ============================================ */
+        
+        .time-entry-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        
+        .time-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .time-entry-header h4 {
+            color: #667eea;
+            margin: 0;
+            font-size: 1.05em;
+        }
+        
+        .time-entry-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        
+        .time-detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .time-detail-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .time-detail-value {
+            font-size: 1em;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .time-entry-pay {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-align: right;
+            margin-top: 12px;
+        }
+        
+        .time-entry-pay strong {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+        
+        /* W-9 Status Badge */
+        .w9-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .w9-status.submitted {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .w9-status.not-submitted {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .w9-status-icon {
+            font-size: 1.2em;
+        }
+        
+        /* Submission Type Badge */
+        .submission-type-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .submission-type-badge.time-and-expenses {
+            background: #e7f3ff;
+            color: #004085;
+        }
+        
+        .submission-type-badge.expenses-only {
+            background: #fff3cd;
+            color: #856404;
+        }
     </style>
 </head>
 <body>
@@ -599,6 +707,15 @@ async function loadSubmissions() {
         
         if (data.success && data.entries) {
             allSubmissions = data.entries;
+            
+            // V3: Enrich submissions with W-9 status
+            // TODO: Implement proper W-9 lookup from Vendors sheet via Apps Script
+            // For now, set default to false - can be enhanced with actual W-9 data
+            allSubmissions = allSubmissions.map(sub => ({
+                ...sub,
+                w9Submitted: sub.w9Submitted || false  // Will be populated from Vendors sheet
+            }));
+            
             console.log('Loaded entries:', allSubmissions.length);
             updateStatistics();
             displaySubmissions(allSubmissions);
@@ -675,6 +792,151 @@ function displaySubmissions(submissions) {
         </tr>
     `;
     }).join('');
+}
+
+function renderTimeEntries(sub) {
+    // V3: Render time entries breakdown
+    // Handle both old format (single entry with basePay/overtimePay) and new format (timeEntries array)
+    
+    const submissionType = sub.submissionType || 'time_and_expenses';
+    
+    if (submissionType === 'expenses_only') {
+        return '<p style="color: #6c757d; font-style: italic;">No time entries - Expense report only</p>';
+    }
+    
+    // Try to parse time entries array
+    let timeEntries = [];
+    try {
+        if (sub.timeEntries && sub.timeEntries !== '[]') {
+            timeEntries = JSON.parse(sub.timeEntries);
+        }
+    } catch (e) {
+        console.error('Error parsing time entries:', e);
+    }
+    
+    // If no time entries array, create one from old format
+    if (timeEntries.length === 0 && (sub.basePay || sub.clockIn)) {
+        timeEntries = [{
+            id: 1,
+            date: sub.eventDate || '',
+            clockIn: sub.clockIn || '',
+            clockOut: sub.clockOut || '',
+            breakMinutes: sub.breakMinutes || 0,
+            dayType: sub.dayType || '',
+            routineCount: sub.routineCount || 0,
+            basePay: parseFloat(sub.basePay || 0),
+            overtimePay: parseFloat(sub.overtimePay || 0)
+        }];
+    }
+    
+    if (timeEntries.length === 0) {
+        return '<p style="color: #6c757d; font-style: italic;">No time entry data available</p>';
+    }
+    
+    // Get vendor pay type to determine what to display
+    const payType = sub.payType || 'hourly';
+    
+    // Render time entry cards
+    return timeEntries.map((entry, index) => {
+        const totalPay = (entry.basePay || 0) + (entry.overtimePay || 0);
+        
+        // Calculate hours for hourly workers
+        let regularHours = 0;
+        let overtimeHours = 0;
+        
+        if (payType === 'hourly' && entry.clockIn && entry.clockOut) {
+            const clockIn = new Date(`2000-01-01T${entry.clockIn}`);
+            const clockOut = new Date(`2000-01-01T${entry.clockOut}`);
+            let totalMinutes = (clockOut - clockIn) / 60000;
+            if (totalMinutes < 0) totalMinutes += 24 * 60;
+            const workMinutes = totalMinutes - (entry.breakMinutes || 0);
+            const totalHours = workMinutes / 60;
+            
+            // Check if vendor has overtime eligibility from vendors sheet
+            // For now, assume standard 8 hour threshold (we can enhance this later)
+            const overtimeThreshold = 8;
+            if (totalHours > overtimeThreshold) {
+                regularHours = overtimeThreshold;
+                overtimeHours = totalHours - overtimeThreshold;
+            } else {
+                regularHours = totalHours;
+            }
+        }
+        
+        return `
+            <div class="time-entry-card">
+                <div class="time-entry-header">
+                    <h4>Day ${index + 1}: ${entry.date ? new Date(entry.date).toLocaleDateString('en-US', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'}) : 'Date not specified'}</h4>
+                </div>
+                
+                <div class="time-entry-details">
+                    ${payType === 'hourly' && entry.clockIn ? `
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Clock In</div>
+                            <div class="time-detail-value">${formatTime(entry.clockIn)}</div>
+                        </div>
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Clock Out</div>
+                            <div class="time-detail-value">${formatTime(entry.clockOut)}</div>
+                        </div>
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Break (minutes)</div>
+                            <div class="time-detail-value">${entry.breakMinutes || 0} min</div>
+                        </div>
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Regular Hours</div>
+                            <div class="time-detail-value">${regularHours.toFixed(2)} hrs</div>
+                        </div>
+                        ${overtimeHours > 0 ? `
+                            <div class="time-detail-item">
+                                <div class="time-detail-label">Overtime Hours</div>
+                                <div class="time-detail-value">${overtimeHours.toFixed(2)} hrs</div>
+                            </div>
+                        ` : ''}
+                    ` : ''}
+                    
+                    ${payType === 'daily' ? `
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Day Type</div>
+                            <div class="time-detail-value">${entry.dayType === 'full' ? 'Full Day' : entry.dayType === 'half' ? 'Half Day' : entry.dayType || 'N/A'}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${payType === 'routine' ? `
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Routines</div>
+                            <div class="time-detail-value">${entry.routineCount || 0}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${payType === 'fixed' ? `
+                        <div class="time-detail-item">
+                            <div class="time-detail-label">Pay Type</div>
+                            <div class="time-detail-value">Fixed Amount</div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="time-entry-pay">
+                    ${entry.basePay > 0 ? `<div>Base Pay: <strong>$${entry.basePay.toFixed(2)}</strong></div>` : ''}
+                    ${entry.overtimePay > 0 ? `<div>Overtime: <strong>$${entry.overtimePay.toFixed(2)}</strong></div>` : ''}
+                    <div style="margin-top: 8px; padding-top: 8px; border-top: 2px solid #667eea40;">
+                        This Day's Total: <strong>$${totalPay.toFixed(2)}</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function formatTime(timeString) {
+    if (!timeString) return 'N/A';
+    // Convert 24-hour time to 12-hour format
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
 }
 
 function viewDetails(submissionId) {
@@ -786,11 +1048,23 @@ function viewDetails(submissionId) {
                 
                 <div class="detail-label">Pay Type:</div>
                 <div class="detail-value">${sub.payType}</div>
+                
+                <div class="detail-label">W-9 Status:</div>
+                <div class="detail-value">
+                    <span class="w9-status ${sub.w9Submitted ? 'submitted' : 'not-submitted'}">
+                        <span class="w9-status-icon">${sub.w9Submitted ? '✓' : '✗'}</span>
+                        ${sub.w9Submitted ? 'W-9 Submitted' : 'W-9 Not Submitted'}
+                    </span>
+                </div>
             </div>
         </div>
         
         <div class="detail-section">
-            <h3>Event Details</h3>
+            <h3>Event Details
+                ${sub.submissionType ? `<span class="submission-type-badge ${sub.submissionType}">${
+                    sub.submissionType === 'expenses_only' ? '💰 Expense Report Only' : '⏰ Time Entry + Expenses'
+                }</span>` : ''}
+            </h3>
             <div class="detail-grid">
                 <div class="detail-label">Event Date:</div>
                 <div class="detail-value"><strong>${formatDate(sub.eventDate)}</strong></div>
@@ -810,17 +1084,17 @@ function viewDetails(submissionId) {
         </div>
         
         <div class="detail-section">
+            <h3>${sub.submissionType === 'expenses_only' ? 'Expense Summary' : 'Time Entry Details'}</h3>
+            ${renderTimeEntries(sub)}
+        </div>
+        
+        <div class="detail-section">
             <h3>Payment Breakdown</h3>
             <div class="expense-breakdown">
-                <div class="expense-item">
-                    <span>Base Pay:</span>
-                    <strong>$${parseFloat(sub.basePay).toFixed(2)}</strong>
-                </div>
-                
-                ${parseFloat(sub.overtimePay) > 0 ? `
+                ${sub.submissionType !== 'expenses_only' ? `
                     <div class="expense-item">
-                        <span>Overtime Pay:</span>
-                        <strong>$${parseFloat(sub.overtimePay).toFixed(2)}</strong>
+                        <span>Time Entry Pay:</span>
+                        <strong>$${parseFloat(sub.timeEntriesTotal || sub.basePay || 0).toFixed(2)}</strong>
                     </div>
                 ` : ''}
                 
