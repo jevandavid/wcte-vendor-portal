@@ -1438,20 +1438,17 @@ function collectFormData() {
 }
 
 // ============================================================================
-// FIXED: sendEmailNotifications - Populates ALL email template variables
+// CORRECTED: sendEmailNotifications - No buildOfficeEmailHTML dependency
 // ============================================================================
 async function sendEmailNotifications(data) {
     try {
-        // Build office email HTML (existing function)
-        const officeEmail = buildOfficeEmailHTML(data);
-
         // Calculate totals for email display
         const timeEntryPay = data.totalBasePay || 0;
         const mileageTotal = data.totalMileage || 0;
         const expensesTotal = data.totalExpenses || 0;
         const grandTotal = data.totalPay || 0;
 
-        // Format currency
+        // Format currency helper
         const formatCurrency = (amount) => {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
@@ -1522,7 +1519,7 @@ async function sendEmailNotifications(data) {
 
         // Determine W-9 status for office email
         const w9Status = currentVendor?.w9OnFile ? 'On File' : 'Missing';
-        const w9StatusIcon = currentVendor?.w9OnFile ? 'âœ…' : 'âŒ';
+        const w9StatusIcon = currentVendor?.w9OnFile ? '✅' : '❌';
         const w9BgColor = currentVendor?.w9OnFile ? '#e8f5e9' : '#ffebee';
         const w9BorderColor = currentVendor?.w9OnFile ? '#c8e6c9' : '#ffcdd2';
         const w9TextColor = currentVendor?.w9OnFile ? '#2e7d32' : '#c62828';
@@ -1531,7 +1528,7 @@ async function sendEmailNotifications(data) {
         const vendorNotes = data.notes || 'No additional notes provided';
 
         // Admin portal URL (update this to your actual admin portal URL)
-        const adminPortalUrl = 'https://jevandavid.github.io/wcte-vendor-portal/admin';
+        const adminPortalUrl = 'https://your-admin-portal-url.com';
 
         // ========================================================================
         // SEND EMAIL #1: Office Notification
@@ -1576,7 +1573,7 @@ async function sendEmailNotifications(data) {
             to_email: 'office@wctedance.com'
         });
 
-        console.log('âœ… Office notification email sent successfully');
+        console.log('✅ Office notification email sent successfully');
 
         // ========================================================================
         // SEND EMAIL #2: Vendor Confirmation
@@ -1584,7 +1581,7 @@ async function sendEmailNotifications(data) {
         const vendorEmail = data.vendorEmail || currentVendor?.email || '';
 
         if (!vendorEmail) {
-            console.warn('âš ï¸ No vendor email found - skipping confirmation email');
+            console.warn('⚠️ No vendor email found - skipping confirmation email');
             return;
         }
 
@@ -1609,14 +1606,13 @@ async function sendEmailNotifications(data) {
             current_year: currentYear
         });
 
-        console.log('âœ… Vendor confirmation email sent successfully');
+        console.log('✅ Vendor confirmation email sent successfully');
 
     } catch (error) {
-        console.error('âŒ Email notification error:', error);
+        console.error('❌ Email notification error:', error);
         throw error;
     }
 }
-
 function showSection(sectionId) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById(sectionId).classList.add('active');
