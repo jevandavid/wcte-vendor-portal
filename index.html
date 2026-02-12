@@ -393,6 +393,40 @@
                 </div>
                 
                 <form id="timeEntryForm">
+                    <!-- V3: FORM MODE SELECTOR -->
+                    <div class="form-section" style="margin-bottom: 30px;">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">📋 Submission Type</h3>
+                        <div style="background: #f8f9fa; padding: 25px; border-radius: 8px;">
+                            <label style="display: flex; align-items: flex-start; margin-bottom: 20px; cursor: pointer; padding: 15px; background: white; border-radius: 6px; border: 2px solid #dee2e6; transition: border-color 0.3s;">
+                                <input type="radio" name="submissionType" value="time_and_expenses" checked 
+                                       onchange="toggleFormMode()" 
+                                       style="margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; cursor: pointer;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: 600; color: #667eea; margin-bottom: 5px;">
+                                        ⏰ Time Entry + Expenses
+                                    </div>
+                                    <div style="font-size: 0.9em; color: #6c757d;">
+                                        Track hours worked for one or more days and submit expenses
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label style="display: flex; align-items: flex-start; cursor: pointer; padding: 15px; background: white; border-radius: 6px; border: 2px solid #dee2e6; transition: border-color 0.3s;">
+                                <input type="radio" name="submissionType" value="expenses_only" 
+                                       onchange="toggleFormMode()" 
+                                       style="margin-right: 12px; margin-top: 3px; width: 20px; height: 20px; cursor: pointer;">
+                                <div>
+                                    <div style="font-size: 1.1em; font-weight: 600; color: #ff6b6b; margin-bottom: 5px;">
+                                        💰 Expense Reporting Only
+                                    </div>
+                                    <div style="font-size: 0.9em; color: #6c757d;">
+                                        Submit mileage and expenses without time tracking
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
                     <div class="section-header">Event Information</div>
                     
                     <div class="form-group">
@@ -490,6 +524,29 @@
                             </label>
                         </div>
                     </div>
+                    
+                    
+                    <!-- V3: MULTIPLE TIME ENTRIES SECTION -->
+                    <div id="timeEntrySection" class="form-section" style="margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 style="color: #667eea; margin: 0;">⏰ Time Entry Details</h3>
+                            <button type="button" onclick="addTimeEntry()" class="btn" 
+                                    style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                + Add Day
+                            </button>
+                        </div>
+                        
+                        <div id="timeEntriesContainer" style="margin-bottom: 20px;">
+                            <!-- Time entry cards will render here by JavaScript -->
+                        </div>
+                        
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; text-align: right;">
+                            <div style="font-size: 0.9em; margin-bottom: 5px;">Total Time Entry Pay</div>
+                            <div style="font-size: 2em; font-weight: 700;" id="timeEntriesTotal">$0.00</div>
+                        </div>
+                    </div>
+                    <!-- END V3 MULTIPLE TIME ENTRIES -->
+
                     
                     <!-- NEW: Mileage Entries -->
                     <div class="section-header">Mileage Reimbursement</div>
@@ -601,6 +658,281 @@ let currentVendor = null;
 let vendorsList = [];
 let mileageEntries = [];
 let expenseEntries = [];
+    // ============================================
+    // V3: MULTIPLE TIME ENTRIES MANAGEMENT
+    // ============================================
+    
+    let timeEntries = [];
+    let timeEntryIdCounter = 1;
+
+    function toggleFormMode() {
+        const mode = document.querySelector('input[name="submissionType"]:checked').value;
+        const timeSection = document.getElementById('timeEntrySection');
+        
+        if (mode === 'expenses_only') {
+            timeSection.style.display = 'none';
+            timeEntries = [];
+        } else {
+            timeSection.style.display = 'block';
+            if (timeEntries.length === 0) {
+                addTimeEntry();
+            }
+        }
+        calculatePayment();
+    }
+
+    function addTimeEntry() {
+        const eventDateField = document.getElementById('eventDate');
+        const entry = {
+            id: timeEntryIdCounter++,
+            date: eventDateField ? eventDateField.value : '',
+            clockIn: '',
+            clockOut: '',
+            breakMinutes: 0,
+            dayType: '',
+            routineCount: 1,
+            rolePerformed: '',
+            workDetails: '',
+            basePay: 0,
+            overtimePay: 0
+        };
+        
+        timeEntries.push(entry);
+        renderTimeEntries();
+        calculatePayment();
+    }
+
+    function removeTimeEntry(id) {
+        if (timeEntries.length <= 1) {
+            alert('You must have at least one time entry');
+            return;
+        }
+        timeEntries = timeEntries.filter(e => e.id !== id);
+        renderTimeEntries();
+        calculatePayment();
+    }
+
+    function updateTimeEntry(id, field, value) {
+        const entry = timeEntries.find(e => e.id === id);
+        if (entry) {
+            entry[field] = (field === 'breakMinutes' || field === 'routineCount') ? 
+                           parseInt(value) || 0 : value;
+        }
+    }
+
+    function renderTimeEntries() {
+        const container = document.getElementById('timeEntriesContainer');
+        if (!container || !currentVendor) return;
+        
+        container.innerHTML = timeEntries.map((entry, index) => {
+            const canRemove = timeEntries.length > 1;
+            
+            return `
+            <div class="entry-card" style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 20px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4 style="color: #667eea; margin: 0;">Day ${index + 1}</h4>
+                    ${canRemove ? `
+                        <button type="button" onclick="removeTimeEntry(${entry.id})" 
+                                style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                            × Remove
+                        </button>
+                    ` : ''}
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Date *</label>
+                    <input type="date" value="${entry.date}" 
+                           onchange="updateTimeEntry(${entry.id}, 'date', this.value); calculatePayment();"
+                           style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
+                           required>
+                </div>
+                
+                ${currentVendor.payType === 'hourly' ? `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Clock In *</label>
+                            <input type="time" value="${entry.clockIn}" 
+                                   onchange="updateTimeEntry(${entry.id}, 'clockIn', this.value); calculatePayment();"
+                                   style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
+                                   required>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Clock Out *</label>
+                            <input type="time" value="${entry.clockOut}" 
+                                   onchange="updateTimeEntry(${entry.id}, 'clockOut', this.value); calculatePayment();"
+                                   style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
+                                   required>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Break (min)</label>
+                            <input type="number" value="${entry.breakMinutes}" min="0" 
+                                   onchange="updateTimeEntry(${entry.id}, 'breakMinutes', this.value); calculatePayment();"
+                                   style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;">
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${currentVendor.payType === 'daily' ? `
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Day Type *</label>
+                        <select onchange="updateTimeEntry(${entry.id}, 'dayType', this.value); calculatePayment();"
+                                style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
+                                required>
+                            <option value="">Select...</option>
+                            <option value="full" ${entry.dayType === 'full' ? 'selected' : ''}>Full Day</option>
+                            <option value="half" ${entry.dayType === 'half' ? 'selected' : ''}>Half Day</option>
+                        </select>
+                    </div>
+                ` : ''}
+                
+                ${currentVendor.payType === 'routine' ? `
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Number of Routines *</label>
+                        <input type="number" value="${entry.routineCount}" min="1" 
+                               onchange="updateTimeEntry(${entry.id}, 'routineCount', this.value); calculatePayment();"
+                               style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
+                               required>
+                    </div>
+                ` : ''}
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Role Performed *</label>
+                    <select onchange="updateTimeEntry(${entry.id}, 'rolePerformed', this.value)"
+                            style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
+                            required>
+                        <option value="">Select Role...</option>
+                        <option value="Choreographer" ${entry.rolePerformed === 'Choreographer' ? 'selected' : ''}>Choreographer</option>
+                        <option value="Judge" ${entry.rolePerformed === 'Judge' ? 'selected' : ''}>Judge</option>
+                        <option value="Instructor" ${entry.rolePerformed === 'Instructor' ? 'selected' : ''}>Instructor</option>
+                        <option value="Assistant" ${entry.rolePerformed === 'Assistant' ? 'selected' : ''}>Assistant</option>
+                        <option value="Director" ${entry.rolePerformed === 'Director' ? 'selected' : ''}>Director</option>
+                        <option value="Other" ${entry.rolePerformed === 'Other' ? 'selected' : ''}>Other</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600;">Work Details</label>
+                    <textarea onchange="updateTimeEntry(${entry.id}, 'workDetails', this.value)"
+                              placeholder="Describe the work performed this day..."
+                              style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px; min-height: 80px;">${entry.workDetails}</textarea>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); padding: 15px; border-radius: 6px; text-align: right;">
+                    <strong style="color: #667eea;">This Day's Pay: $${(entry.basePay + entry.overtimePay).toFixed(2)}</strong>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function calculateHourlyPayForEntry(entry) {
+        if (!entry.clockIn || !entry.clockOut) {
+            return { basePay: 0, overtimePay: 0 };
+        }
+        
+        const clockIn = new Date(`2000-01-01T${entry.clockIn}`);
+        const clockOut = new Date(`2000-01-01T${entry.clockOut}`);
+        const totalMinutes = (clockOut - clockIn) / 60000;
+        const workMinutes = totalMinutes - (entry.breakMinutes || 0);
+        const workHours = workMinutes / 60;
+        
+        let regularHours = workHours;
+        let overtimeHours = 0;
+        
+        if (currentVendor.overtimeEligible && workHours > currentVendor.overtimeThreshold) {
+            regularHours = currentVendor.overtimeThreshold;
+            overtimeHours = workHours - currentVendor.overtimeThreshold;
+        }
+        
+        const basePay = regularHours * currentVendor.hourlyRate;
+        const overtimePay = overtimeHours * currentVendor.hourlyRate * currentVendor.overtimeMultiplier;
+        
+        return { basePay, overtimePay };
+    }
+
+    // V3: Updated calculatePayment to handle multiple time entries
+    const originalCalculatePayment = calculatePayment;
+    calculatePayment = function() {
+        if (!currentVendor) return;
+        
+        let totalBase = 0;
+        let totalOvertime = 0;
+        
+        const mode = document.querySelector('input[name="submissionType"]:checked').value;
+        
+        // Calculate time entries pay
+        if (mode === 'time_and_expenses') {
+            timeEntries.forEach(entry => {
+                let entryBase = 0;
+                let entryOT = 0;
+                
+                if (currentVendor.payType === 'hourly') {
+                    const result = calculateHourlyPayForEntry(entry);
+                    entryBase = result.basePay;
+                    entryOT = result.overtimePay;
+                } else if (currentVendor.payType === 'daily') {
+                    entryBase = entry.dayType === 'full' ? currentVendor.fullDayRate : 
+                               entry.dayType === 'half' ? currentVendor.halfDayRate : 0;
+                } else if (currentVendor.payType === 'routine') {
+                    entryBase = (entry.routineCount || 0) * currentVendor.perRoutineRate;
+                } else if (currentVendor.payType === 'fixed') {
+                    entryBase = currentVendor.fixedAmount || 0;
+                }
+                
+                entry.basePay = entryBase;
+                entry.overtimePay = entryOT;
+                totalBase += entryBase;
+                totalOvertime += entryOT;
+            });
+            
+            renderTimeEntries(); // Update displays in cards
+        }
+        
+        // Calculate mileage and expenses
+        const mileageTotal = mileageEntries.reduce((sum, e) => sum + (e.miles * 0.67), 0);
+        const expensesTotal = expenseEntries.reduce((sum, e) => sum + e.amount, 0);
+        const grandTotal = totalBase + totalOvertime + mileageTotal + expensesTotal;
+        
+        // Update displays
+        const timeTotal = document.getElementById('timeEntriesTotal');
+        if (timeTotal) {
+            timeTotal.textContent = `$${(totalBase + totalOvertime).toFixed(2)}`;
+        }
+        
+        const summaryEl = document.getElementById('paymentSummary');
+        if (summaryEl) {
+            summaryEl.innerHTML = `
+                ${mode === 'time_and_expenses' ? `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Time Entry Pay:</span>
+                        <strong>$${(totalBase + totalOvertime).toFixed(2)}</strong>
+                    </div>
+                ` : ''}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span>Mileage Reimbursement:</span>
+                    <strong>$${mileageTotal.toFixed(2)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px solid #dee2e6;">
+                    <span>Expense Reimbursement:</span>
+                    <strong>$${expensesTotal.toFixed(2)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.3em;">
+                    <strong>TOTAL GROSS PAY:</strong>
+                    <strong style="color: #28a745;">$${grandTotal.toFixed(2)}</strong>
+                </div>
+            `;
+        }
+    };
+
+    // V3: Initialize time entries when vendor loads
+    const originalLoadVendor = loadVendor;
+    loadVendor = async function(email) {
+        await originalLoadVendor(email);
+        if (currentVendor && timeEntries.length === 0) {
+            addTimeEntry();
+        }
+    };
+
 let uploadedFiles = [];
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -962,7 +1294,8 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
     hideAllAlerts();
     
     try {
-        const formData = collectFormData();
+        // V3: Use collectV3FormData to include time entries array
+        const formData = collectV3FormData();
         const result = await submitToWebApp(formData);
         await sendEmailNotifications(formData);
         
@@ -1054,7 +1387,49 @@ function collectFormData() {
     };
 }
 
-async function submitToWebApp(data) {
+
+    // V3: Collect form data with time entries
+    function collectV3FormData() {
+        const mode = document.querySelector('input[name="submissionType"]:checked').value;
+        const timeEntriesTotal = timeEntries.reduce((sum, e) => sum + e.basePay + e.overtimePay, 0);
+        const mileageTotal = mileageEntries.reduce((sum, e) => sum + (e.miles * 0.67), 0);
+        const expensesTotal = expenseEntries.reduce((sum, e) => sum + e.amount, 0);
+        const totalPay = timeEntriesTotal + mileageTotal + expensesTotal;
+        
+        const eventDateField = document.getElementById('eventDate');
+        const eventNameField = document.getElementById('eventName');
+        const eventLocationField = document.getElementById('eventLocation');
+        const notesField = document.getElementById('additionalNotes');
+        
+        return {
+            submissionType: mode,
+            vendorId: currentVendor.id,
+            vendorName: `${currentVendor.firstName} ${currentVendor.lastName}`,
+            vendorEmail: currentVendor.email,
+            payType: currentVendor.payType,
+            eventDate: eventDateField ? eventDateField.value : '',
+            eventName: eventNameField ? eventNameField.value : '',
+            eventLocation: eventLocationField ? eventLocationField.value : '',
+            
+            // V3: Time entries array
+            timeEntries: JSON.stringify(timeEntries),
+            timeEntriesTotal: timeEntriesTotal.toFixed(2),
+            
+            // Existing fields
+            mileageEntries: JSON.stringify(mileageEntries),
+            mileageTotal: mileageTotal.toFixed(2),
+            expenseEntries: JSON.stringify(expenseEntries),
+            expensesTotal: expensesTotal.toFixed(2),
+            receipts: JSON.stringify(uploadedFiles.map(f => ({ name: f.name, size: f.size, type: f.type }))),
+            receiptFiles: uploadedFiles.length > 0 ? JSON.stringify(uploadedFiles) : '',
+            totalPay: totalPay.toFixed(2),
+            additionalNotes: notesField ? notesField.value : '',
+            submissionDate: new Date().toISOString(),
+            status: 'Pending Review'
+        };
+    }
+
+    async function submitToWebApp(data) {
     const response = await fetch(WEBAPP_URL, {
         method: 'POST',
         headers: {'Content-Type': 'text/plain'},
