@@ -1266,16 +1266,52 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
         }
         showAlert('success', successMsg);
         
+        // V3: Complete form cleanup after successful submission
         setTimeout(() => {
+            // Reset form fields
             document.getElementById('timeEntryForm').reset();
             document.getElementById('eventDate').valueAsDate = new Date();
+            
+            // V3: Clear time entries array and re-initialize
+            timeEntries = [];
+            addTimeEntry(); // Add fresh first entry
+            
+            // Clear mileage and expenses
             mileageEntries = [];
             expenseEntries = [];
-            uploadedFiles = [];
             addMileageEntry();
             addExpenseEntry();
+            
+            // V3: Clear uploaded files and file display
+            uploadedFiles = [];
+            const fileInput = document.getElementById('receiptFiles');
+            if (fileInput) {
+                fileInput.value = ''; // Clear file input
+            }
+            const fileList = document.getElementById('fileList');
+            if (fileList) {
+                fileList.innerHTML = '<p style="color: #6c757d; font-style: italic;">No files selected</p>';
+            }
+            const driveStatus = document.getElementById('driveUploadStatus');
+            if (driveStatus) {
+                driveStatus.innerHTML = '';
+            }
+            
+            // Reset submission type to default
+            const timeAndExpensesRadio = document.querySelector('input[name="submissionType"][value="time_and_expenses"]');
+            if (timeAndExpensesRadio) {
+                timeAndExpensesRadio.checked = true;
+                toggleFormMode(); // Show time section
+            }
+            
+            // Recalculate payment (should be $0.00)
             calculatePayment();
+            
+            // Hide alerts
             hideAllAlerts();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 3000);
         
     } catch (error) {
