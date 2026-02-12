@@ -708,13 +708,8 @@ async function loadSubmissions() {
         if (data.success && data.entries) {
             allSubmissions = data.entries;
             
-            // V3: Enrich submissions with W-9 status
-            // TODO: Implement proper W-9 lookup from Vendors sheet via Apps Script
-            // For now, set default to false - can be enhanced with actual W-9 data
-            allSubmissions = allSubmissions.map(sub => ({
-                ...sub,
-                w9Submitted: sub.w9Submitted || false  // Will be populated from Vendors sheet
-            }));
+            // V3: W9 status is now enriched by Apps Script from Vendors sheet Column P
+            // No need to set default - real data comes from backend
             
             console.log('Loaded entries:', allSubmissions.length);
             updateStatistics();
