@@ -672,11 +672,21 @@ let expenseEntries = [];
         if (mode === 'expenses_only') {
             timeSection.style.display = 'none';
             timeEntries = [];
+            
+            // Remove 'required' attribute from all time entry inputs when hidden
+            const timeInputs = timeSection.querySelectorAll('input[required], select[required]');
+            timeInputs.forEach(input => {
+                input.removeAttribute('required');
+                input.dataset.wasRequired = 'true'; // Mark for restoration later
+            });
         } else {
             timeSection.style.display = 'block';
             if (timeEntries.length === 0) {
                 addTimeEntry();
             }
+            
+            // Restore 'required' attribute to time entry inputs (will be re-added by renderTimeEntries)
+            // The renderTimeEntries function will add required attributes back
         }
         calculatePayment();
     }
@@ -724,6 +734,10 @@ let expenseEntries = [];
         const container = document.getElementById('timeEntriesContainer');
         if (!container || !currentVendor) return;
         
+        // Check current submission mode - don't add 'required' if in expenses_only mode
+        const mode = document.querySelector('input[name="submissionType"]:checked')?.value || 'time_and_expenses';
+        const shouldRequire = mode === 'time_and_expenses' ? 'required' : '';
+        
         container.innerHTML = timeEntries.map((entry, index) => {
             const canRemove = timeEntries.length > 1;
             
@@ -734,7 +748,7 @@ let expenseEntries = [];
                     ${canRemove ? `
                         <button type="button" onclick="removeTimeEntry(${entry.id})" 
                                 style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: 600;">
-                            Ã— Remove
+                            × Remove
                         </button>
                     ` : ''}
                 </div>
@@ -744,7 +758,7 @@ let expenseEntries = [];
                     <input type="date" value="${entry.date}" 
                            onchange="updateTimeEntry(${entry.id}, 'date', this.value); calculatePayment();"
                            style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
-                           required>
+                           ${shouldRequire}>
                 </div>
                 
                 ${currentVendor.payType === 'hourly' ? `
@@ -754,14 +768,14 @@ let expenseEntries = [];
                             <input type="time" value="${entry.clockIn}" 
                                    onchange="updateTimeEntry(${entry.id}, 'clockIn', this.value); calculatePayment();"
                                    style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
-                                   required>
+                                   ${shouldRequire}>
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Clock Out *</label>
                             <input type="time" value="${entry.clockOut}" 
                                    onchange="updateTimeEntry(${entry.id}, 'clockOut', this.value); calculatePayment();"
                                    style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
-                                   required>
+                                   ${shouldRequire}>
                         </div>
                         <div>
                             <label style="display: block; margin-bottom: 5px; font-weight: 600;">Break (min)</label>
@@ -777,7 +791,7 @@ let expenseEntries = [];
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">Day Type *</label>
                         <select onchange="updateTimeEntry(${entry.id}, 'dayType', this.value); calculatePayment();"
                                 style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
-                                required>
+                                ${shouldRequire}>
                             <option value="">Select...</option>
                             <option value="full" ${entry.dayType === 'full' ? 'selected' : ''}>Full Day</option>
                             <option value="half" ${entry.dayType === 'half' ? 'selected' : ''}>Half Day</option>
@@ -791,7 +805,7 @@ let expenseEntries = [];
                         <input type="number" value="${entry.routineCount}" min="1" 
                                onchange="updateTimeEntry(${entry.id}, 'routineCount', this.value); calculatePayment();"
                                style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px;"
-                               required>
+                               ${shouldRequire}>
                     </div>
                 ` : ''}
                 
@@ -1256,7 +1270,7 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
         // V3: Use collectV3FormData to include time entries array
         const formData = collectV3FormData();
         const result = await submitToWebApp(formData);
-        await sendEmailNotifications(formData);
+        await sendEmailNotifications(formData, result);
         
         document.getElementById('loadingSubmit').style.display = 'none';
         
@@ -1397,6 +1411,9 @@ function collectFormData() {
         const rolePerformedField = document.getElementById('rolePerformed');
         const notesField = document.getElementById('additionalNotes');
         
+        // Get first time entry for legacy fields (if exists)
+        const firstEntry = timeEntries.length > 0 ? timeEntries[0] : null;
+        
         return {
             submissionType: mode,
             vendorId: currentVendor.id,
@@ -1407,6 +1424,16 @@ function collectFormData() {
             eventName: eventNameField ? eventNameField.value : '',
             eventLocation: eventLocationField ? eventLocationField.value : '',
             rolePerformed: rolePerformedField ? rolePerformedField.value : '',
+            
+            // Legacy fields (for backward compatibility - uses first time entry or defaults)
+            workDetails: firstEntry ? firstEntry.workDetails : '',
+            clockIn: firstEntry ? firstEntry.clockIn : '',
+            clockOut: firstEntry ? firstEntry.clockOut : '',
+            breakMinutes: firstEntry ? firstEntry.breakMinutes : 0,
+            dayType: firstEntry ? firstEntry.dayType : '',
+            routineCount: firstEntry ? firstEntry.routineCount : 0,
+            basePay: firstEntry ? firstEntry.basePay.toFixed(2) : '0.00',
+            overtimePay: firstEntry ? firstEntry.overtimePay.toFixed(2) : '0.00',
             
             // V3: Time entries array
             timeEntries: JSON.stringify(timeEntries),
@@ -1437,7 +1464,7 @@ function collectFormData() {
     return await response.json();
 }
 
-async function sendEmailNotifications(data) {
+async function sendEmailNotifications(data, result) {
     // Format mileage details for email
     const mileageDetails = mileageEntries.length > 0 
         ? mileageEntries.map((e, i) => 
@@ -1532,6 +1559,9 @@ async function sendEmailNotifications(data) {
     // Determine submission type
     const submissionType = data.submissionType === 'expenses_only' ? 'EXPENSE REPORT ONLY' : 'TIME ENTRY + EXPENSES';
     
+    // Get confirmation number from result
+    const confirmationNumber = result && result.entryId ? result.entryId : 'Processing...';
+    
     // Send office notification with all template variables
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
         // Vendor information
@@ -1572,13 +1602,19 @@ async function sendEmailNotifications(data) {
         submission_type: submissionType
     });
     
-    // Send vendor confirmation email
+    // Send vendor confirmation email with all required fields
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
         to_email: data.vendorEmail,
         vendor_name: data.vendorName,
-        event_name: data.eventName,
-        event_date: data.eventDate,
-        total_amount: `$${grandTotal}`
+        submission_type: submissionType,
+        pay_period: payPeriod,
+        submission_timestamp: submissionTimestamp,
+        confirmation_number: confirmationNumber,
+        time_entry_pay: `$${timeEntryPay}`,
+        mileage_total: `$${mileageTotal}`,
+        expenses_total: `$${expensesTotal}`,
+        grand_total: `$${grandTotal}`,
+        current_year: new Date().getFullYear()
     });
 }
 
