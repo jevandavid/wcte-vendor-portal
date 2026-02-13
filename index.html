@@ -1484,18 +1484,50 @@ async function sendEmailNotifications(data, result) {
         // V3: Multiple time entries
         const entries = JSON.parse(data.timeEntries);
         dailyBreakdown = entries.map((entry, i) => {
-            const hours = parseFloat(entry.hours || 0);
-            const regHrs = Math.min(hours, currentVendor.overtimeThreshold || 8);
-            const otHrs = Math.max(0, hours - (currentVendor.overtimeThreshold || 8));
+            // Calculate hours from clock in/out times
+            let hours = 0;
+            let regHrs = 0;
+            let otHrs = 0;
+            
+            if (entry.clockIn && entry.clockOut) {
+                const clockIn = new Date(`1970-01-01T${entry.clockIn}`);
+                const clockOut = new Date(`1970-01-01T${entry.clockOut}`);
+                const breakMins = parseInt(entry.breakMinutes) || 0;
+                const diffMs = clockOut - clockIn;
+                hours = Math.max(0, (diffMs / (1000 * 60 * 60)) - (breakMins / 60));
+                
+                // Calculate regular and overtime
+                if (currentVendor.overtimeEligible && hours > currentVendor.overtimeThreshold) {
+                    regHrs = currentVendor.overtimeThreshold;
+                    otHrs = hours - currentVendor.overtimeThreshold;
+                } else {
+                    regHrs = hours;
+                    otHrs = 0;
+                }
+            } else if (entry.dayType) {
+                // Daily pay type - estimate 8 hours for full day, 4 for half day
+                hours = entry.dayType === 'full' ? 8 : entry.dayType === 'half' ? 4 : 0;
+                regHrs = hours;
+                otHrs = 0;
+            } else if (entry.routineCount) {
+                // Per-routine pay - show routine count instead of hours
+                const routineText = `${entry.routineCount} routine${entry.routineCount > 1 ? 's' : ''}`;
+                totalHours += 0; // Don't add to total hours for per-routine
+                
+                return `<strong>Day ${i + 1} (${entry.date || 'No date'}):</strong><br>` +
+                       `${routineText}<br>` +
+                       `${entry.rolePerformed || 'No role'}<br>` +
+                       `Pay: $${(entry.basePay + entry.overtimePay).toFixed(2)}`;
+            }
             
             totalHours += hours;
             regularHours += regHrs;
             overtimeHours += otHrs;
             
             return `<strong>Day ${i + 1} (${entry.date || 'No date'}):</strong><br>` +
-                   `${entry.clockIn || 'N/A'} - ${entry.clockOut || 'N/A'}<br>` +
+                   `${entry.clockIn || 'N/A'} - ${entry.clockOut || 'N/A'}${entry.breakMinutes ? ` (${entry.breakMinutes} min break)` : ''}<br>` +
                    `${entry.rolePerformed || 'No role'} - ${hours.toFixed(2)} hrs<br>` +
-                   `Base: $${entry.basePay || '0.00'}, OT: $${entry.overtimePay || '0.00'}`;
+                   `Base: $${(entry.basePay || 0).toFixed(2)}, OT: $${(entry.overtimePay || 0).toFixed(2)}`;
         }).join('<br><br>');
     } else {
         // Legacy: Single time entry
