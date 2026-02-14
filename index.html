@@ -831,13 +831,27 @@ let expenseEntries = [];
         let regularHours = workHours;
         let overtimeHours = 0;
         
+        // Debug logging
+        console.log('Overtime Calculation Debug:', {
+            workHours: workHours,
+            overtimeEligible: currentVendor.overtimeEligible,
+            overtimeThreshold: currentVendor.overtimeThreshold,
+            overtimeMultiplier: currentVendor.overtimeMultiplier,
+            hourlyRate: currentVendor.hourlyRate
+        });
+        
         if (currentVendor.overtimeEligible && workHours > currentVendor.overtimeThreshold) {
             regularHours = currentVendor.overtimeThreshold;
             overtimeHours = workHours - currentVendor.overtimeThreshold;
+            console.log('Overtime applied:', { regularHours, overtimeHours });
+        } else {
+            console.log('No overtime - eligible:', currentVendor.overtimeEligible, 'hours > threshold:', workHours > currentVendor.overtimeThreshold);
         }
         
         const basePay = regularHours * currentVendor.hourlyRate;
         const overtimePay = overtimeHours * currentVendor.hourlyRate * currentVendor.overtimeMultiplier;
+        
+        console.log('Pay calculated:', { basePay, overtimePay });
         
         return { basePay, overtimePay };
     }
