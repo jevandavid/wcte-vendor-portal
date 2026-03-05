@@ -668,7 +668,7 @@
             box.style.cssText = 'background:white;border-radius:16px;padding:40px 50px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:400px;width:90%;';
 
             const logo = document.createElement('div');
-            logo.textContent = '🔐';
+            logo.innerHTML = '&#x1F510;';
             logo.style.cssText = 'font-size:2.5em;margin-bottom:10px;';
 
             const title = document.createElement('h2');
@@ -768,8 +768,8 @@
                 <option value="Rejected">Rejected</option>
             </select>
             
-            <button class="btn btn-primary" onclick="loadSubmissions()">ðŸ”„ Refresh</button>
-            <button class="btn btn-primary" onclick="exportToCSV()">ðŸ“¥ Export CSV</button>
+            <button class="btn btn-primary" onclick="loadSubmissions()">&#x1F504; Refresh</button>
+            <button class="btn btn-primary" onclick="exportToCSV()">&#x1F4E5; Export CSV</button>
         </div>
         
         <div id="loadingContainer" class="loading" style="display: none;">
@@ -907,16 +907,16 @@ function displaySubmissions(submissions) {
             <td><span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span></td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn btn-info btn-sm" onclick="viewDetails('${sub.id}')">ðŸ‘ï¸ Review</button>
+                    <button class="btn btn-info btn-sm" onclick="viewDetails('${sub.id}')">&#x1F441; Review</button>
                     ${isPending ? `
-                        <button class="btn btn-success btn-sm" onclick="updateStatus('${sub.id}', 'Approved')">âœ“ Approve</button>
-                        <button class="btn btn-danger btn-sm" onclick="updateStatus('${sub.id}', 'Rejected')">âœ— Reject</button>
+                        <button class="btn btn-success btn-sm" onclick="updateStatus('${sub.id}', 'Approved')">&#x2714; Approve</button>
+                        <button class="btn btn-danger btn-sm" onclick="updateStatus('${sub.id}', 'Rejected')">&#x2717; Reject</button>
                     ` : ''}
                     ${isApproved ? `
-                        <button class="btn btn-info btn-sm" onclick="updateStatus('${sub.id}', 'Paid')">ðŸ’³ Mark Paid</button>
+                        <button class="btn btn-info btn-sm" onclick="updateStatus('${sub.id}', 'Paid')">&#x1F4B3; Mark Paid</button>
                     ` : ''}
                     ${isPaid ? `
-                        <span style="color: #28a745;">âœ“ Complete</span>
+                        <span style="color: #28a745;">&#x2714; Complete</span>
                     ` : ''}
                 </div>
             </td>
@@ -1125,11 +1125,11 @@ function viewDetails(submissionId) {
     // Build Drive receipts HTML
     const driveReceiptsHTML = driveData.files && driveData.files.length > 0 ? `
         <div class="drive-folder-card">
-            <div class="drive-icon">ðŸ“</div>
+            <div class="drive-icon">&#x1F4C1;</div>
             <div class="drive-info">
                 <h4>Google Drive Folder</h4>
                 <div class="drive-path">${driveData.folderPath || 'WCTE Receipts'}</div>
-                <a href="${driveData.folderLink}" target="_blank" class="drive-btn">ðŸ“‚ Open Folder in Drive</a>
+                <a href="${driveData.folderLink}" target="_blank" class="drive-btn">&#x1F4C2; Open Folder in Drive</a>
             </div>
         </div>
         
@@ -1139,12 +1139,12 @@ function viewDetails(submissionId) {
                 const downloadLink = file.driveLink.replace('/view', '/export?format=pdf');
                 return `
                 <div class="receipt-card">
-                    <div class="receipt-icon">${isPDF ? 'ðŸ“„' : 'ðŸ–¼ï¸'}</div>
+                    <div class="receipt-icon">${isPDF ? '&#x1F4C4;' : '&#x1F5BC;'}</div>
                     <div class="receipt-name">${file.name}</div>
                     <div class="receipt-size">${(file.size / 1024).toFixed(1)} KB</div>
                     <div class="receipt-actions">
                         <a href="${file.driveLink}" target="_blank" class="receipt-btn view">
-                            ðŸ“‚ View
+                            &#x1F4C2; View
                         </a>
                     </div>
                 </div>
@@ -1185,7 +1185,7 @@ function viewDetails(submissionId) {
                 <div class="detail-label">W-9 Status:</div>
                 <div class="detail-value">
                     <span class="w9-status ${sub.w9Submitted ? 'submitted' : 'not-submitted'}">
-                        <span class="w9-status-icon">${sub.w9Submitted ? 'âœ“' : 'âœ—'}</span>
+                        <span class="w9-status-icon">${sub.w9Submitted ? '&#x2714;' : '&#x2717;'}</span>
                         ${sub.w9Submitted ? 'W-9 Submitted' : 'W-9 Not Submitted'}
                     </span>
                 </div>
@@ -1195,7 +1195,7 @@ function viewDetails(submissionId) {
         <div class="detail-section">
             <h3>Event Details
                 ${sub.submissionType ? `<span class="submission-type-badge ${sub.submissionType}">${
-                    sub.submissionType === 'expenses_only' ? 'ðŸ’° Expense Report Only' : 'â° Time Entry + Expenses'
+                    sub.submissionType === 'expenses_only' ? '&#x1F4B0; Expense Report Only' : '&#x23F0; Time Entry + Expenses'
                 }</span>` : ''}
             </h3>
             <div class="detail-grid">
@@ -1276,12 +1276,12 @@ function viewDetails(submissionId) {
         
         <div class="detail-section">
             <h3>Receipts (${driveData.files ? driveData.files.length : 0})</h3>
-            ${driveData.files && driveData.files.length > 0 ? '<p style="color: #4285f4; margin-bottom: 15px;"><strong>ðŸ’¡ Tip:</strong> Click "View" to open receipts in Google Drive. All receipts are organized in the folder shown above.</p>' : ''}
+            ${driveData.files && driveData.files.length > 0 ? '<p style="color: #4285f4; margin-bottom: 15px;"><strong>&#x1F4A1; Tip:</strong> Click "View" to open receipts in Google Drive. All receipts are organized in the folder shown above.</p>' : ''}
             ${driveReceiptsHTML}
             
             <!-- DEBUG INFO - Remove after testing -->
             <details style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                <summary style="cursor: pointer; font-weight: 600; color: #667eea;">ðŸ” Debug Info (Click to expand)</summary>
+                <summary style="cursor: pointer; font-weight: 600; color: #667eea;">&#x1F50D; Debug Info (Click to expand)</summary>
                 <pre style="margin-top: 10px; padding: 10px; background: white; border: 1px solid #dee2e6; border-radius: 4px; overflow-x: auto; font-size: 0.85em;">${JSON.stringify(driveData, null, 2)}</pre>
             </details>
         </div>
@@ -1301,11 +1301,11 @@ function viewDetails(submissionId) {
     document.getElementById('modalActions').innerHTML = `
         <button class="btn btn-primary" onclick="closeModal()">Close</button>
         ${isPending ? `
-            <button class="btn btn-success" onclick="updateStatusFromModal('${sub.id}', 'Approved')">âœ“ Approve</button>
-            <button class="btn btn-danger" onclick="updateStatusFromModal('${sub.id}', 'Rejected')">âœ— Reject</button>
+            <button class="btn btn-success" onclick="updateStatusFromModal('${sub.id}', 'Approved')">&#x2714; Approve</button>
+            <button class="btn btn-danger" onclick="updateStatusFromModal('${sub.id}', 'Rejected')">&#x2717; Reject</button>
         ` : ''}
         ${isApproved ? `
-            <button class="btn btn-info" onclick="updateStatusFromModal('${sub.id}', 'Paid')">ðŸ’³ Mark as Paid</button>
+            <button class="btn btn-info" onclick="updateStatusFromModal('${sub.id}', 'Paid')">&#x1F4B3; Mark as Paid</button>
         ` : ''}
     `;
     
