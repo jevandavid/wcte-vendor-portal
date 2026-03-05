@@ -583,9 +583,108 @@
             background: #fff3cd;
             color: #856404;
         }
+
+        /* PASSWORD GATE */
+        #passwordGate {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #passwordGate .gate-box {
+            background: white;
+            border-radius: 16px;
+            padding: 40px 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        #passwordGate .gate-logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        #passwordGate h2 {
+            color: #333;
+            font-size: 1.4em;
+            margin-bottom: 6px;
+        }
+        #passwordGate p {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+        #passwordGate input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        #passwordGate input:focus {
+            border-color: #667eea;
+        }
+        #passwordGate button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        #passwordGate button:hover { opacity: 0.9; }
+        #passwordGate .gate-error {
+            color: #dc3545;
+            font-size: 0.85em;
+            margin-top: 10px;
+            min-height: 20px;
+        }
     </style>
 </head>
 <body>
+    <!-- PASSWORD GATE -->
+    <div id="passwordGate">
+        <div class="gate-box">
+            <div class="gate-logo">🔐</div>
+            <h2>Admin Access</h2>
+            <p>WCTE Vendor Management Portal</p>
+            <input type="password" id="gateInput" placeholder="Enter passcode" onkeydown="if(event.key==='Enter') checkPassword()" autofocus>
+            <button onclick="checkPassword()">Unlock Dashboard</button>
+            <div class="gate-error" id="gateError"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            if (sessionStorage.getItem('wcte_admin_auth') === 'true') {
+                document.getElementById('passwordGate').style.display = 'none';
+            }
+        })();
+        function checkPassword() {
+            const input = document.getElementById('gateInput').value;
+            if (input === 'admin2six!') {
+                sessionStorage.setItem('wcte_admin_auth', 'true');
+                document.getElementById('passwordGate').style.display = 'none';
+            } else {
+                document.getElementById('gateError').textContent = 'Incorrect passcode. Please try again.';
+                document.getElementById('gateInput').value = '';
+                document.getElementById('gateInput').focus();
+            }
+        }
+    </script>
+
     <div class="header">
         <h1>Admin Dashboard</h1>
         <p class="subtitle">WCTE Vendor Time Entry Management - Google Drive Integration</p>
@@ -632,8 +731,8 @@
                 <option value="Rejected">Rejected</option>
             </select>
             
-            <button class="btn btn-primary" onclick="loadSubmissions()">🔄 Refresh</button>
-            <button class="btn btn-primary" onclick="exportToCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary" onclick="loadSubmissions()">ðŸ”„ Refresh</button>
+            <button class="btn btn-primary" onclick="exportToCSV()">ðŸ“¥ Export CSV</button>
         </div>
         
         <div id="loadingContainer" class="loading" style="display: none;">
@@ -771,16 +870,16 @@ function displaySubmissions(submissions) {
             <td><span class="status-badge status-${sub.status.toLowerCase().replace(' ', '-')}">${sub.status}</span></td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn btn-info btn-sm" onclick="viewDetails('${sub.id}')">👁️ Review</button>
+                    <button class="btn btn-info btn-sm" onclick="viewDetails('${sub.id}')">ðŸ‘ï¸ Review</button>
                     ${isPending ? `
-                        <button class="btn btn-success btn-sm" onclick="updateStatus('${sub.id}', 'Approved')">✓ Approve</button>
-                        <button class="btn btn-danger btn-sm" onclick="updateStatus('${sub.id}', 'Rejected')">✗ Reject</button>
+                        <button class="btn btn-success btn-sm" onclick="updateStatus('${sub.id}', 'Approved')">âœ“ Approve</button>
+                        <button class="btn btn-danger btn-sm" onclick="updateStatus('${sub.id}', 'Rejected')">âœ— Reject</button>
                     ` : ''}
                     ${isApproved ? `
-                        <button class="btn btn-info btn-sm" onclick="updateStatus('${sub.id}', 'Paid')">💳 Mark Paid</button>
+                        <button class="btn btn-info btn-sm" onclick="updateStatus('${sub.id}', 'Paid')">ðŸ’³ Mark Paid</button>
                     ` : ''}
                     ${isPaid ? `
-                        <span style="color: #28a745;">✓ Complete</span>
+                        <span style="color: #28a745;">âœ“ Complete</span>
                     ` : ''}
                 </div>
             </td>
@@ -989,11 +1088,11 @@ function viewDetails(submissionId) {
     // Build Drive receipts HTML
     const driveReceiptsHTML = driveData.files && driveData.files.length > 0 ? `
         <div class="drive-folder-card">
-            <div class="drive-icon">📁</div>
+            <div class="drive-icon">ðŸ“</div>
             <div class="drive-info">
                 <h4>Google Drive Folder</h4>
                 <div class="drive-path">${driveData.folderPath || 'WCTE Receipts'}</div>
-                <a href="${driveData.folderLink}" target="_blank" class="drive-btn">📂 Open Folder in Drive</a>
+                <a href="${driveData.folderLink}" target="_blank" class="drive-btn">ðŸ“‚ Open Folder in Drive</a>
             </div>
         </div>
         
@@ -1003,12 +1102,12 @@ function viewDetails(submissionId) {
                 const downloadLink = file.driveLink.replace('/view', '/export?format=pdf');
                 return `
                 <div class="receipt-card">
-                    <div class="receipt-icon">${isPDF ? '📄' : '🖼️'}</div>
+                    <div class="receipt-icon">${isPDF ? 'ðŸ“„' : 'ðŸ–¼ï¸'}</div>
                     <div class="receipt-name">${file.name}</div>
                     <div class="receipt-size">${(file.size / 1024).toFixed(1)} KB</div>
                     <div class="receipt-actions">
                         <a href="${file.driveLink}" target="_blank" class="receipt-btn view">
-                            📂 View
+                            ðŸ“‚ View
                         </a>
                     </div>
                 </div>
@@ -1049,7 +1148,7 @@ function viewDetails(submissionId) {
                 <div class="detail-label">W-9 Status:</div>
                 <div class="detail-value">
                     <span class="w9-status ${sub.w9Submitted ? 'submitted' : 'not-submitted'}">
-                        <span class="w9-status-icon">${sub.w9Submitted ? '✓' : '✗'}</span>
+                        <span class="w9-status-icon">${sub.w9Submitted ? 'âœ“' : 'âœ—'}</span>
                         ${sub.w9Submitted ? 'W-9 Submitted' : 'W-9 Not Submitted'}
                     </span>
                 </div>
@@ -1059,7 +1158,7 @@ function viewDetails(submissionId) {
         <div class="detail-section">
             <h3>Event Details
                 ${sub.submissionType ? `<span class="submission-type-badge ${sub.submissionType}">${
-                    sub.submissionType === 'expenses_only' ? '💰 Expense Report Only' : '⏰ Time Entry + Expenses'
+                    sub.submissionType === 'expenses_only' ? 'ðŸ’° Expense Report Only' : 'â° Time Entry + Expenses'
                 }</span>` : ''}
             </h3>
             <div class="detail-grid">
@@ -1140,12 +1239,12 @@ function viewDetails(submissionId) {
         
         <div class="detail-section">
             <h3>Receipts (${driveData.files ? driveData.files.length : 0})</h3>
-            ${driveData.files && driveData.files.length > 0 ? '<p style="color: #4285f4; margin-bottom: 15px;"><strong>💡 Tip:</strong> Click "View" to open receipts in Google Drive. All receipts are organized in the folder shown above.</p>' : ''}
+            ${driveData.files && driveData.files.length > 0 ? '<p style="color: #4285f4; margin-bottom: 15px;"><strong>ðŸ’¡ Tip:</strong> Click "View" to open receipts in Google Drive. All receipts are organized in the folder shown above.</p>' : ''}
             ${driveReceiptsHTML}
             
             <!-- DEBUG INFO - Remove after testing -->
             <details style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
-                <summary style="cursor: pointer; font-weight: 600; color: #667eea;">🔍 Debug Info (Click to expand)</summary>
+                <summary style="cursor: pointer; font-weight: 600; color: #667eea;">ðŸ” Debug Info (Click to expand)</summary>
                 <pre style="margin-top: 10px; padding: 10px; background: white; border: 1px solid #dee2e6; border-radius: 4px; overflow-x: auto; font-size: 0.85em;">${JSON.stringify(driveData, null, 2)}</pre>
             </details>
         </div>
@@ -1165,11 +1264,11 @@ function viewDetails(submissionId) {
     document.getElementById('modalActions').innerHTML = `
         <button class="btn btn-primary" onclick="closeModal()">Close</button>
         ${isPending ? `
-            <button class="btn btn-success" onclick="updateStatusFromModal('${sub.id}', 'Approved')">✓ Approve</button>
-            <button class="btn btn-danger" onclick="updateStatusFromModal('${sub.id}', 'Rejected')">✗ Reject</button>
+            <button class="btn btn-success" onclick="updateStatusFromModal('${sub.id}', 'Approved')">âœ“ Approve</button>
+            <button class="btn btn-danger" onclick="updateStatusFromModal('${sub.id}', 'Rejected')">âœ— Reject</button>
         ` : ''}
         ${isApproved ? `
-            <button class="btn btn-info" onclick="updateStatusFromModal('${sub.id}', 'Paid')">💳 Mark as Paid</button>
+            <button class="btn btn-info" onclick="updateStatusFromModal('${sub.id}', 'Paid')">ðŸ’³ Mark as Paid</button>
         ` : ''}
     `;
     
