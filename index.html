@@ -553,7 +553,7 @@
                     
                     <div class="info-box">
                         <p><strong>Mileage Rate:</strong> $0.67 per mile</p>
-                        <p>Add all trips related to this event (to/from venue, errands, etc.)</p>
+                        <p>Add trips related to this event (business related, to/from venue, etc.)</p>
                     </div>
                     
                     <div id="mileageEntries"></div>
@@ -564,7 +564,7 @@
                     <div class="section-header">General Expenses</div>
                     
                     <div class="info-box">
-                        <p>Add approved expenses such as Rideshare, parking, etc.</p>
+                        <p>Add approved expenses such as Rideshare, etc.</p>
                     </div>
                     
                     <div id="expenseEntries"></div>
@@ -1105,7 +1105,7 @@ function renderExpenseEntries() {
             </div>
             <div>
                 <label>Description</label>
-                <input type="text" value="${entry.description}" onchange="updateExpenseEntry(${entry.id}, 'description', this.value)" placeholder="e.g., Rideshare, Parking">
+                <input type="text" value="${entry.description}" onchange="updateExpenseEntry(${entry.id}, 'description', this.value)" placeholder="e.g., Rideshare...">
             </div>
         </div>
     `).join('');
