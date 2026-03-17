@@ -1438,127 +1438,149 @@ function collectFormData() {
 }
 
 async function sendEmailNotifications(data) {
-    // Build per-day time entry breakdown
-    let parsedEntries = [];
-    try { parsedEntries = JSON.parse(data.timeEntries || '[]'); } catch(e) {}
-
-    function formatTimeLabel(t) {
+    // -- Helpers ----------------------------------------------------------
+    function fmtTime(t) {
         if (!t) return 'N/A';
         const [h, m] = t.split(':').map(Number);
         const ampm = h >= 12 ? 'PM' : 'AM';
-        const hour = h % 12 || 12;
-        return `${hour}:${String(m).padStart(2,'0')} ${ampm}`;
+        return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
     }
-
-    function formatDateLabel(d) {
+    function fmtDate(d) {
         if (!d) return 'N/A';
-        // Force local-time parse by appending T00:00:00 (avoids UTC off-by-one)
         return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {
             weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
         });
     }
+    function fmtMoney(n) { return '$' + parseFloat(n || 0).toFixed(2); }
 
-    const timeBreakdown = parsedEntries.length > 0
-        ? parsedEntries.map((entry, i) => {
-            const dateLabel = formatDateLabel(entry.date);
-            const base = `  Day ${i+1}: ${dateLabel}`;
-            if (currentVendor.payType === 'hourly') {
-                const breakPart = entry.breakMinutes > 0 ? ` | Break: ${entry.breakMinutes} min` : '';
-                const dayCost = (entry.basePay + entry.overtimePay).toFixed(2);
-                return `${base}\n    In: ${formatTimeLabel(entry.clockIn)}  Out: ${formatTimeLabel(entry.clockOut)}${breakPart}\n    Pay: $${dayCost}`;
-            } else if (currentVendor.payType === 'daily') {
-                return `${base}\n    Day type: ${entry.dayType || 'N/A'}  |  Pay: $${(entry.basePay).toFixed(2)}`;
-            } else if (currentVendor.payType === 'routine') {
-                return `${base}\n    Routines: ${entry.routineCount}  |  Pay: $${(entry.basePay).toFixed(2)}`;
+    // -- Parse time entries ------------------------------------------------
+    let parsedEntries = [];
+    try { parsedEntries = JSON.parse(data.timeEntries || '[]'); } catch(e) {}
+
+    // -- Hour totals (for office template fields) --------------------------
+    let totalRegularHours = 0, totalOvertimeHours = 0;
+    parsedEntries.forEach(entry => {
+        if (currentVendor.payType === 'hourly' && entry.clockIn && entry.clockOut) {
+            const cin  = new Date('2000-01-01T' + entry.clockIn);
+            const cout = new Date('2000-01-01T' + entry.clockOut);
+            const worked = ((cout - cin) / 3600000) - ((entry.breakMinutes || 0) / 60);
+            if (currentVendor.overtimeEligible && worked > currentVendor.overtimeThreshold) {
+                totalRegularHours  += currentVendor.overtimeThreshold;
+                totalOvertimeHours += worked - currentVendor.overtimeThreshold;
+            } else {
+                totalRegularHours += Math.max(0, worked);
             }
-            return `${base}  |  Pay: $${(entry.basePay + entry.overtimePay).toFixed(2)}`;
-          }).join('\n\n')
-        : '  (No time entries)';
-
-    const mileageDetails = mileageEntries.length > 0
-        ? mileageEntries.map((e, i) =>
-            `  Trip ${i+1}: ${e.date || 'No date'} - ${e.miles} miles = $${(e.miles * 0.67).toFixed(2)}`
-          ).join('\n')
-        : '  (None)';
-
-    const expenseDetails = expenseEntries.length > 0
-        ? expenseEntries.map((e, i) =>
-            `  Expense ${i+1}: ${e.date || 'No date'} - ${e.description || 'No description'} = $${e.amount.toFixed(2)}`
-          ).join('\n')
-        : '  (None)';
-
-    const officeEmail =
-`WCTE TIME ENTRY SUBMISSION
-===========================
-Vendor:    ${data.vendorName}
-Event:     ${data.eventName}
-Location:  ${data.eventLocation}
-Role:      ${data.rolePerformed}
-
-DAILY TIME BREAKDOWN
---------------------
-${timeBreakdown}
-
-MILEAGE
--------
-${mileageDetails}
-Mileage Total: $${data.mileageTotal}
-
-EXPENSES
---------
-${expenseDetails}
-Expenses Total: $${data.expensesTotal}
-
-PAYMENT SUMMARY
----------------
-Time Entry Pay: $${data.timeEntriesTotal || data.basePay}
-Mileage:        $${data.mileageTotal}
-Expenses:       $${data.expensesTotal}
-TOTAL:          $${data.totalPay}
-
-Receipts: ${uploadedFiles.length} file(s) attached
-Submitted: ${new Date().toLocaleString()}`;
-
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
-        from_name: data.vendorName,
-        from_email: data.vendorEmail,
-        subject: `Time Entry - ${data.vendorName} - ${data.eventName}`,
-        message: officeEmail,
-        to_email: 'office@wctedance.com'
+        }
     });
 
-    // Vendor confirmation -- include the daily breakdown too
-    const vendorEmail =
-`Hi ${data.vendorName},
+    // -- Daily breakdown text (used in {{time_entries_breakdown}}) ---------
+    const timeEntriesBreakdown = parsedEntries.length > 0
+        ? parsedEntries.map((e, i) => {
+            const dl = fmtDate(e.date);
+            if (currentVendor.payType === 'hourly') {
+                const brk = e.breakMinutes > 0 ? ` | Break: ${e.breakMinutes} min` : '';
+                return `Day ${i+1}: ${dl} | In: ${fmtTime(e.clockIn)}  Out: ${fmtTime(e.clockOut)}${brk} | Pay: ${fmtMoney(e.basePay + e.overtimePay)}`;
+            } else if (currentVendor.payType === 'daily') {
+                return `Day ${i+1}: ${dl} | ${e.dayType || 'N/A'} day | Pay: ${fmtMoney(e.basePay)}`;
+            } else if (currentVendor.payType === 'routine') {
+                return `Day ${i+1}: ${dl} | Routines: ${e.routineCount} | Pay: ${fmtMoney(e.basePay)}`;
+            }
+            return `Day ${i+1}: ${dl} | Pay: ${fmtMoney(e.basePay + e.overtimePay)}`;
+          }).join('\n')
+        : 'No time entries recorded';
 
-Your time entry has been submitted successfully!
+    // -- Mileage & expense detail text -------------------------------------
+    const mileageDetailsText = mileageEntries.length > 0
+        ? mileageEntries.map((e, i) =>
+            `Trip ${i+1}: ${e.date || 'No date'} - ${e.miles} mi = ${fmtMoney(e.miles * 0.67)}`
+          ).join('\n')
+        : 'None';
 
-EVENT: ${data.eventName}
-LOCATION: ${data.eventLocation}
+    const expenseDetailsText = expenseEntries.length > 0
+        ? expenseEntries.map((e, i) =>
+            `Expense ${i+1}: ${e.date || 'No date'} - ${e.description || 'No description'} = ${fmtMoney(e.amount)}`
+          ).join('\n')
+        : 'None';
 
-DAILY BREAKDOWN
----------------
-${timeBreakdown}
+    // -- Pay period label (first date -> last date) ------------------------
+    const entryDates = parsedEntries.map(e => e.date).filter(Boolean).sort();
+    const payPeriod = entryDates.length > 0
+        ? (entryDates.length === 1
+            ? fmtDate(entryDates[0])
+            : `${fmtDate(entryDates[0])} - ${fmtDate(entryDates[entryDates.length - 1])}`)
+        : (data.eventDate ? fmtDate(data.eventDate) : 'N/A');
 
-PAYMENT SUMMARY
----------------
-Time Entry Pay: $${data.timeEntriesTotal || data.basePay}
-Mileage:        $${data.mileageTotal}
-Expenses:       $${data.expensesTotal}
-TOTAL SUBMITTED: $${data.totalPay}
+    // -- Submission metadata -----------------------------------------------
+    const now = new Date();
+    const submissionTimestamp = now.toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit'
+    });
+    const confirmationNumber = 'WCTE-' + now.getFullYear() +
+        String(now.getMonth()+1).padStart(2,'0') +
+        String(now.getDate()).padStart(2,'0') + '-' +
+        String(now.getTime()).slice(-5);
+    const currentYear = now.getFullYear();
 
-Please keep this email for your records. The WCTE office will review and approve your submission.
+    // -- W-9 status (uses currentVendor.w9OnFile loaded at login) ----------
+    const w9OnFile = currentVendor.w9OnFile === true;
+    const w9Status      = w9OnFile ? 'On File'      : 'Not On File - Action Required';
+    const w9StatusIcon  = w9OnFile ? '&#x2714;'     : '&#x26A0;';
+    const w9BgColor     = w9OnFile ? '#e8f5e9'      : '#fff3cd';
+    const w9BorderColor = w9OnFile ? '#c8e6c9'      : '#ffe082';
+    const w9TextColor   = w9OnFile ? '#2e7d32'      : '#856404';
 
-Thank you!
-WCTE Dance`;
+    // -- Shared dollar values ----------------------------------------------
+    const timeEntryPay  = fmtMoney(data.timeEntriesTotal || 0);
+    const mileageTotal  = fmtMoney(data.mileageTotal);
+    const expensesTotal = fmtMoney(data.expensesTotal);
+    const grandTotal    = fmtMoney(data.totalPay);
+    const submissionTypeLabel = data.submissionType === 'expenses_only'
+        ? 'Expense Report Only'
+        : 'Time Entry + Expenses';
 
+    // -- OFFICE notification -----------------------------------------------
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OFFICE, {
+        subject:                `Time Entry - ${data.vendorName} - ${data.eventName}`,
+        submission_type:        submissionTypeLabel,
+        vendor_name:            data.vendorName,
+        vendor_email:           data.vendorEmail,
+        submission_timestamp:   submissionTimestamp,
+        pay_period:             payPeriod,
+        total_hours:            (totalRegularHours + totalOvertimeHours).toFixed(2),
+        regular_hours:          totalRegularHours.toFixed(2),
+        overtime_hours:         totalOvertimeHours.toFixed(2),
+        time_entries_breakdown: timeEntriesBreakdown,
+        time_entry_pay:         timeEntryPay,
+        mileage_total:          mileageTotal,
+        expenses_total:         expensesTotal,
+        grand_total:            grandTotal,
+        mileage_details:        mileageDetailsText,
+        expense_details:        expenseDetailsText,
+        receipt_info:           `${uploadedFiles.length} file(s) attached`,
+        w9_status:              w9Status,
+        w9_status_icon:         w9StatusIcon,
+        w9_bg_color:            w9BgColor,
+        w9_border_color:        w9BorderColor,
+        w9_text_color:          w9TextColor,
+        vendor_notes:           data.additionalNotes || 'None',
+        admin_portal_url:       'https://wctedance.github.io/admin'
+    });
+
+    // -- VENDOR confirmation -----------------------------------------------
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CONFIRMATION, {
-        to_email: data.vendorEmail,
-        vendor_name: data.vendorName,
-        event_name: data.eventName,
-        event_date: data.eventDate,
-        total_amount: data.totalPay,
-        message: vendorEmail
+        to_email:             data.vendorEmail,
+        subject:              `Submission Confirmation - ${data.eventName}`,
+        vendor_name:          data.vendorName,
+        submission_type:      submissionTypeLabel,
+        pay_period:           payPeriod,
+        submission_timestamp: submissionTimestamp,
+        confirmation_number:  confirmationNumber,
+        time_entry_pay:       timeEntryPay,
+        mileage_total:        mileageTotal,
+        expenses_total:       expensesTotal,
+        grand_total:          grandTotal,
+        current_year:         currentYear
     });
 }
 
