@@ -553,7 +553,7 @@
                     
                     <div class="info-box">
                         <p><strong>Mileage Rate:</strong> $0.67 per mile</p>
-                        <p>Add all trips related to this event (to/from venue, errands, etc.)</p>
+                        <p>Add trips related to this event (to/from venue, etc.)</p>
                     </div>
                     
                     <div id="mileageEntries"></div>
@@ -564,7 +564,7 @@
                     <div class="section-header">General Expenses</div>
                     
                     <div class="info-box">
-                        <p>Add expenses such as meals, lodging, supplies, parking, etc.</p>
+                        <p>Add approved expenses such as rideshare to Venue, etc.</p>
                     </div>
                     
                     <div id="expenseEntries"></div>
@@ -915,7 +915,7 @@ async function loadVendors() {
         console.log('Vendors loaded:', vendorsList.length);
     } catch (error) {
         console.error('Error loading vendors:', error);
-        showAlert('error', 'Failed to load vendor data. Please refresh or contact office@wctedance.com');
+        showAlert('error', 'Failed to load vendor data. Please refresh or contact info@wctedance.com');
     }
 }
 
@@ -936,7 +936,7 @@ async function loginVendor() {
         currentVendor = vendor;
         showTimeEntryForm();
     } else {
-        showAlert('error', 'Email not found. Please contact office@wctedance.com');
+        showAlert('error', 'Email not found. Please contact info@wctedance.com');
     }
 }
 
@@ -1077,7 +1077,7 @@ function renderExpenseEntries() {
             </div>
             <div>
                 <label>Description</label>
-                <input type="text" value="${entry.description}" onchange="updateExpenseEntry(${entry.id}, 'description', this.value)" placeholder="e.g., Hotel, Meals, Parking">
+                <input type="text" value="${entry.description}" onchange="updateExpenseEntry(${entry.id}, 'description', this.value)" placeholder="e.g., Rideshare">
             </div>
         </div>
     `).join('');
@@ -1317,7 +1317,7 @@ document.getElementById('timeEntryForm').addEventListener('submit', async functi
     } catch (error) {
         document.getElementById('loadingSubmit').style.display = 'none';
         console.error('Submission error:', error);
-        showAlert('error', 'Failed to submit. Please try again or contact office@wctedance.com');
+        showAlert('error', 'Failed to submit. Please try again or contact info@wctedance.com');
     }
 });
 
