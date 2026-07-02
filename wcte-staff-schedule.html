@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WCTE Staff Schedule — Mystic Nationals 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple-950: #0e0a22;
+    --purple-900: #13111f;
+    --purple-800: #1a0f4a;
+    --purple-700: #22145c;
+    --purple-600: #2d1b6b;
+    --purple-500: #4a2da0;
+    --purple-400: #7c4fd4;
+    --purple-300: #a87ee8;
+    --purple-200: #c9a8f5;
+    --purple-100: #ede5ff;
+    --violet-mid: #6b3fc8;
+    --violet-bright: #8b5cf6;
+    --pink: #e91e8c;
+    --pink-dark: #c01070;
+    --pink-light: #ff4db8;
+    --green: #6fcf97;
+    --amber: #fbbf24;
+    --red: #eb5757;
+    --white: #ffffff;
+    --off-white: #f8f6ff;
+    --gray-200: #e2daf5;
+    --gray-400: #9d94c0;
+    --gray-600: #5a5280;
+    --text: #ffffff;
+    --text-mid: rgba(255,255,255,0.75);
+    --text-dim: rgba(255,255,255,0.45);
+    --border: rgba(255,255,255,0.12);
+    --border-bright: rgba(255,255,255,0.22);
+    --card-bg: rgba(255,255,255,0.06);
+    --card-bg-hover: rgba(255,255,255,0.1);
+    --input-bg: rgba(255,255,255,0.08);
+    --input-border: rgba(255,255,255,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--purple-800);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: radial-gradient(ellipse at 20% 0%, rgba(124,79,212,0.3) 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, rgba(233,30,140,0.15) 0%, transparent 50%);
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: linear-gradient(135deg, var(--purple-950) 0%, var(--purple-700) 100%);
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    min-height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .topbar-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  .topbar-logo span { color: var(--pink); }
+  .topbar-divider { width: 1px; height: 28px; background: var(--border); }
+  .topbar-sub {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .topbar-badge {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--green);
+    background: rgba(111,207,151,0.12);
+    border: 1px solid rgba(111,207,151,0.35);
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .topbar-badge.offline { color: var(--red); background: rgba(235,87,87,0.12); border-color: rgba(235,87,87,0.35); }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(111,207,151,0.6);
+    animation: pulse 2s infinite;
+  }
+  .topbar-badge.offline .live-dot { background: var(--red); box-shadow: 0 0 0 0 rgba(235,87,87,0.6); animation: none; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(111,207,151,0.6); }
+    70% { box-shadow: 0 0 0 7px rgba(111,207,151,0); }
+    100% { box-shadow: 0 0 0 0 rgba(111,207,151,0); }
+  }
+
+  /* ── LAYOUT ── */
+  .main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+
+  .section-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--pink);
+    font-weight: 700;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+
+  /* ── SYNC BAR ── */
+  .sync-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+  }
+  .sync-status { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-mid); }
+  .sync-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px rgba(111,207,151,0.8);
+  }
+  .sync-dot.err { background: var(--red); box-shadow: 0 0 8px rgba(235,87,87,0.8); }
+  .sync-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  /* ── FIELDS / BUTTONS ── */
+  .field-group { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    font-weight: 600;
+  }
+  .field input, .field select {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: var(--white);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--pink);
+    background: rgba(255,255,255,0.1);
+  }
+  .field input::placeholder { color: var(--text-dim); }
+  .field select option { background: var(--purple-800); color: white; }
+
+  .btn {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--pink) 0%, var(--pink-dark) 100%);
+    color: var(--white);
+    box-shadow: 0 4px 20px rgba(233,30,140,0.35);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, var(--pink-light) 0%, var(--pink) 100%);
+    box-shadow: 0 6px 28px rgba(233,30,140,0.5);
+    transform: translateY(-1px);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    color: var(--text-mid);
+  }
+  .btn-outline:hover {
+    border-color: var(--pink);
+    color: var(--pink-light);
+    background: rgba(233,30,140,0.08);
+  }
+  .btn-sm { font-size: 10px; padding: 7px 14px; }
+
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-mid); font-family: 'Montserrat', sans-serif; letter-spacing: 0.05em; }
+  .toggle {
+    position: relative; width: 34px; height: 19px; border-radius: 20px;
+    background: rgba(255,255,255,0.15); cursor: pointer; transition: background 0.2s; flex-shrink:0;
+  }
+  .toggle.on { background: var(--pink); }
+  .toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px;
+    border-radius: 50%; background: white; transition: left 0.2s;
+  }
+  .toggle.on::after { left: 17px; }
+
+  /* ── DAY NAV PILLS ── */
+  .day-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+  .day-pill {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-bright);
+    background: var(--card-bg);
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day-pill:hover { border-color: var(--pink); color: var(--pink-light); }
+
+  /* ── NOTICE ── */
+  .notice {
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    border: 1px solid;
+    margin-bottom: 20px;
+  }
+  .notice-info { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.35); color: var(--text-mid); }
+  .notice-warn { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.35); color: var(--amber); }
+  .notice-error { background: rgba(235,87,87,0.12); border-color: rgba(235,87,87,0.4); color: #ff9d9d; }
+
+  /* ── CARDS / DAY SECTIONS ── */
+  .day-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    scroll-margin-top: 80px;
+  }
+  .day-card-header {
+    background: linear-gradient(135deg, var(--purple-600) 0%, var(--violet-mid) 100%);
+    padding: 13px 18px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.95);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .day-card-count { font-size: 10px; color: rgba(255,255,255,0.6); font-weight: 600; letter-spacing: 0.05em; }
+  .day-card-body { padding: 0; }
+
+  /* ── SCHEDULE TABLE ── */
+  .sched-table-wrap { overflow-x: auto; }
+  .sched-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sched-table thead th {
+    text-align: left;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    font-weight: 600;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .sched-table tbody td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-mid);
+  }
+  .sched-table tbody tr:hover { background: var(--card-bg-hover); }
+  .sched-table tbody tr.match-highlight { background: rgba(233,30,140,0.14); }
+  .sched-table tbody tr.match-highlight td { color: var(--white); }
+
+  /* ── LOADING / EMPTY / ERROR STATES ── */
+  .state-box {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--text-mid);
+  }
+  .spinner {
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top: 3px solid var(--pink);
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    animation: spin 0.9s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  footer {
+    text-align: center;
+    padding: 30px 20px 40px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Montserrat', sans-serif;
+    letter-spacing: 0.05em;
+  }
+  footer a { color: var(--pink-light); text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .field-group { grid-template-columns: 1fr; }
+    .sched-table thead { display: none; }
+    .sched-table, .sched-table tbody, .sched-table tr, .sched-table td { display: block; width: 100%; }
+    .sched-table tbody tr { border-bottom: 1px solid var(--border-bright); padding: 10px 16px; }
+    .sched-table tbody td {
+      border-bottom: none;
+      padding: 4px 0;
+      display: flex;
+      gap: 8px;
+    }
+    .sched-table tbody td::before {
+      content: attr(data-label);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gray-400);
+      font-weight: 700;
+      min-width: 90px;
+      flex-shrink: 0;
+    }
+  }
+
+  .print-letterhead { display: none; }
+
+  @media print {
+    .topbar, .sync-bar, .field-group, .day-nav, .notice, footer, #syncBanner { display: none !important; }
+    body { background: #fff !important; background-image: none !important; color: #000; }
+    .main { padding: 0 0 20px; max-width: 100%; }
+
+    .print-letterhead {
+      display: flex !important;
+      align-items: center;
+      gap: 16px;
+      padding: 0 0 14px;
+      margin-bottom: 18px;
+      border-bottom: 2px solid #000;
+    }
+    .print-logo { height: 46px; width: auto; }
+    .print-title {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+      color: #000;
+      letter-spacing: 0.01em;
+    }
+    .print-meta {
+      font-family: 'Montserrat', Arial, sans-serif;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: #444;
+      margin-top: 3px;
+      text-transform: uppercase;
+    }
+
+    .day-card {
+      break-inside: avoid;
+      background: #fff !important;
+      border: 1px solid #000;
+      border-radius: 0;
+      margin-bottom: 16px;
+      box-shadow: none;
+    }
+    .day-card-header {
+      background: #f0f0f0 !important;
+      color: #000 !important;
+      border-bottom: 1.5px solid #000;
+      font-size: 12.5px;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .day-card-count { color: #444 !important; }
+
+    /* Force the table back out of the mobile stacked layout regardless of print viewport width */
+    .sched-table-wrap { overflow: visible; }
+    .sched-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-family: Arial, Helvetica, sans-serif; font-size: 10.5px; line-height: 1.4; }
+    .sched-table thead { display: table-header-group !important; }
+    .sched-table tbody tr { display: table-row !important; border-bottom: none !important; padding: 0 !important; break-inside: avoid; page-break-inside: avoid; }
+    .sched-table thead th, .sched-table tbody td { display: table-cell !important; word-wrap: break-word; }
+
+    .sched-table thead th {
+      background: #eaeaea !important;
+      color: #000 !important;
+      border: 1px solid #000;
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      padding: 7px 8px;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .sched-table tbody td {
+      border: 1px solid #bbb;
+      color: #000 !important;
+      padding: 6px 8px;
+      vertical-align: top;
+      gap: 0 !important;
+    }
+    .sched-table tbody td::before { content: none !important; }
+    .sched-table tbody tr:nth-child(even) td {
+      background: #f6f6f6 !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .sched-table tbody tr.match-highlight td { background: #fff !important; }
+
+    /* Date column is redundant on print — the day-card heading already states it */
+    .col-date { visibility: collapse !important; width: 0 !important; }
+
+    /* Balanced widths, in fixed canonical column order: Call Time, Shift, Responsibility, Location, Staff, Notes */
+    .sched-table th:nth-child(2), .sched-table td:nth-child(2) { width: 9%; }
+    .sched-table th:nth-child(3), .sched-table td:nth-child(3) { width: 13%; }
+    .sched-table th:nth-child(4), .sched-table td:nth-child(4) { width: 17%; }
+    .sched-table th:nth-child(5), .sched-table td:nth-child(5) { width: 12%; }
+    .sched-table th:nth-child(6), .sched-table td:nth-child(6) { width: 21%; }
+    .sched-table th:nth-child(7), .sched-table td:nth-child(7) { width: 28%; }
+
+    @page { margin: 0.5in; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo">WCTE<span>.</span></div>
+    <div class="topbar-divider"></div>
+    <div class="topbar-sub">Staff Schedule — Mystic Nationals 2026</div>
+  </div>
+  <div class="topbar-badge" id="liveBadge"><span class="live-dot"></span><span id="liveBadgeText">Live</span></div>
+</div>
+
+<div class="print-letterhead">
+  <img src="data:image/jpeg;base64,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" alt="WCTE Dance" class="print-logo">
+  <div class="print-letterhead-text">
+    <div class="print-title">Staff Schedule — Mystic Nationals 2026</div>
+    <div class="print-meta" id="printMeta">Generated —</div>
+  </div>
+</div>
+
+<div class="main">
+
+
+  <div class="sync-bar">
+    <div class="sync-status">
+      <span class="sync-dot" id="syncDot"></span>
+      <span id="syncText">Loading schedule…</span>
+    </div>
+    <div class="sync-actions">
+      <div class="toggle-wrap">
+        <span>Auto-refresh</span>
+        <div class="toggle on" id="autoToggle" onclick="toggleAutoRefresh()"></div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="loadSchedule(true)">↻ Refresh Now</button>
+      <button class="btn btn-outline btn-sm" onclick="preparePrint()">🖨 Print</button>
+    </div>
+  </div>
+
+  <div class="notice notice-info">
+    This page pulls live from the WCTE staff schedule sheet and checks for updates automatically every 5 minutes. Use <strong>Find My Name</strong> below to highlight everywhere you're scheduled, or filter by day using the pills once the schedule loads.
+  </div>
+
+  <div class="section-label">Search &amp; Filter</div>
+  <div class="field-group">
+    <div class="field">
+      <label>Find My Name / Keyword</label>
+      <input type="text" id="searchInput" placeholder="e.g. your name, a role, or a location" oninput="renderSchedule()">
+    </div>
+    <div class="field">
+      <label>Jump to Day</label>
+      <select id="daySelect" onchange="jumpToDay()">
+        <option value="">All Days</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="day-nav" id="dayNav"></div>
+
+  <div id="scheduleContainer">
+    <div class="state-box">
+      <div class="spinner"></div>
+      <div>Loading the latest schedule…</div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Data syncs live from Google Sheets · WCTE Dance · Questions? Contact <a href="mailto:office@wctedance.com">office@wctedance.com</a>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG — update these if the sheet or tab changes
+// ═══════════════════════════════════════
+const SHEET_ID = '1MHudGRW2kf3EHPJmOYNrBlChPcCk-xWhCZVdnZ5ej44';
+const GID = '0'; // Sheet1 tab. Change this to pull a different tab.
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_KEY = 'wcte_schedule_cache_v1';
+const NAME_KEY = 'wcte_schedule_myname_v1';
+const MAX_COLUMNS = 7; // Fallback cap if column mapping below finds nothing to match.
+
+// Canonical column labels, in the fixed order we always want them displayed.
+// Each entry is matched against the sheet's own (sometimes messy/mislabeled)
+// header row by keyword, and columns that don't match anything known — like
+// stray leftover headers — are dropped automatically rather than shown as-is.
+const COLUMN_DEFS = [
+  { label: 'Date',           match: ['date'] },
+  { label: 'Call Time',      match: ['call time', 'call'] },
+  { label: 'Shift',          match: ['shift'] },
+  { label: 'Responsibility', match: ['responsibility'] },
+  { label: 'Location',       match: ['location'] },
+  { label: 'Staff',          match: ['staff'] },
+  { label: 'Notes',          match: ['notes', 'note'] },
+];
+
+function mapColumns(rawHeaders) {
+  const colIndexes = [];
+  const labels = [];
+  const used = new Set();
+  COLUMN_DEFS.forEach(def => {
+    const idx = rawHeaders.findIndex((h, i) => !used.has(i) && def.match.some(m => h.toLowerCase().includes(m)));
+    if (idx !== -1) { colIndexes.push(idx); labels.push(def.label); used.add(idx); }
+  });
+  return { colIndexes, labels };
+}
+
+// Fixed event dates — schedule is always grouped and sorted into these pills,
+// regardless of the order rows appear in the sheet. Edit this list if the
+// event dates change. `patterns` are hardcoded, lowercase substrings matched
+// against each row's own Date cell (column A) — covers Google Sheets' default
+// "12-Jul" display format plus a few common variants, and the old weekday-name
+// divider rows still work too.
+const DAY_DEFS = [
+  { patterns: ['12-jul', 'jul-12', '7/12', '07/12', 'july 12', 'sunday'],    label: 'Sun · Jul 12' },
+  { patterns: ['13-jul', 'jul-13', '7/13', '07/13', 'july 13', 'monday'],    label: 'Mon · Jul 13' },
+  { patterns: ['14-jul', 'jul-14', '7/14', '07/14', 'july 14', 'tuesday'],   label: 'Tue · Jul 14' },
+  { patterns: ['15-jul', 'jul-15', '7/15', '07/15', 'july 15', 'wednesday'], label: 'Wed · Jul 15' },
+  { patterns: ['16-jul', 'jul-16', '7/16', '07/16', 'july 16', 'thursday'],  label: 'Thu · Jul 16' },
+  { patterns: ['17-jul', 'jul-17', '7/17', '07/17', 'july 17', 'friday'],    label: 'Fri · Jul 17' },
+];
+
+function detectDayIndex(colAText) {
+  if (!colAText) return -1;
+  const t = colAText.toLowerCase();
+  for (let i = 0; i < DAY_DEFS.length; i++) {
+    if (DAY_DEFS[i].patterns.some(p => t.includes(p))) return i;
+  }
+  return -1;
+}
+
+let sections = [];       // [{ title, rows: [...] }]
+let headers = [];        // column headers from the sheet
+let autoRefreshOn = true;
+let refreshTimer = null;
+let tickTimer = null;
+let lastSyncedAt = null;
+
+let jsonpCounter = 0;
+let jsonpTimeoutId = null;
+
+function loadSchedule(manual) {
+  const txt = document.getElementById('syncText');
+  if (manual) { txt.textContent = 'Refreshing…'; }
+
+  const callbackName = 'gvizCallback_' + Date.now() + '_' + (jsonpCounter++);
+  const script = document.createElement('script');
+
+  function cleanup() {
+    delete window[callbackName];
+    if (script.parentNode) script.parentNode.removeChild(script);
+    if (jsonpTimeoutId) { clearTimeout(jsonpTimeoutId); jsonpTimeoutId = null; }
+  }
+
+  window[callbackName] = function (json) {
+    cleanup();
+    try {
+      if (!json.table || !json.table.cols) throw new Error('No table data');
+      parseIntoSections(json);
+      setLive(true);
+      lastSyncedAt = new Date();
+      saveCache();
+      renderDayNav();
+      renderSchedule();
+      updateSyncText();
+      startTickTimer();
+    } catch (err) {
+      console.error('Schedule sync failed:', err);
+      handleSyncFailure(txt);
+    }
+    restartAutoRefresh();
+  };
+
+  script.onerror = function () {
+    cleanup();
+    console.error('Schedule sync failed: could not load sheet script (check sharing settings).');
+    handleSyncFailure(txt);
+    restartAutoRefresh();
+  };
+
+  // Safety net in case Google returns something that never calls the callback
+  jsonpTimeoutId = setTimeout(function () {
+    if (window[callbackName]) {
+      cleanup();
+      console.error('Schedule sync failed: request timed out.');
+      handleSyncFailure(txt);
+      restartAutoRefresh();
+    }
+  }, 12000);
+
+  script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${callbackName}&gid=${GID}&t=${Date.now()}`;
+  document.head.appendChild(script);
+}
+
+function handleSyncFailure(txt) {
+  setLive(false);
+  const cached = loadCache();
+  if (cached) {
+    sections = cached.sections;
+    headers = cached.headers;
+    lastSyncedAt = new Date(cached.savedAt);
+    renderDayNav();
+    renderSchedule();
+    txt.innerHTML = `Live sync unavailable — showing schedule saved ${timeAgo(lastSyncedAt)}`;
+    showBanner('notice-warn', 'Could not reach the live sheet just now. Showing the last successfully synced schedule. This usually clears up on its own — try Refresh Now in a minute.');
+  } else {
+    txt.textContent = 'Unable to load schedule';
+    document.getElementById('scheduleContainer').innerHTML = `
+      <div class="notice notice-error">
+        <strong>Couldn't load the live schedule.</strong> This almost always means the Google Sheet's sharing setting needs to be "Anyone with the link — Viewer" (File → Share in Google Sheets). Once that's set, click Refresh Now.
+      </div>`;
+  }
+}
+
+function parseIntoSections(json) {
+  const rawHeaders = json.table.cols.map((c, i) => (c.label && c.label.trim()) || `Column ${i + 1}`);
+  const { colIndexes, labels } = mapColumns(rawHeaders);
+  headers = labels.length ? labels : rawHeaders.slice(0, MAX_COLUMNS);
+
+  const rawRows = json.table.rows.map(r => {
+    const cells = (r.c || []).map(cell => (cell && (cell.f || cell.v) != null) ? String(cell.f || cell.v) : '');
+    return colIndexes.length ? colIndexes.map(i => cells[i] || '') : cells.slice(0, MAX_COLUMNS);
+  });
+
+  // Fixed chronological buckets, Sun Jul 12 – Fri Jul 17, so pills/dropdown/sort
+  // always reflect the real event calendar rather than whatever order rows appear in.
+  sections = DAY_DEFS.map(d => ({ title: d.label, rows: [] }));
+  const unassigned = { title: 'Other / Unscheduled', rows: [] };
+  let currentIdx = -1;
+
+  for (const row of rawRows) {
+    const first = (row[0] || '').trim();
+    const rest = row.slice(1);
+    const restEmpty = rest.every(v => !v || !v.trim());
+    const isHeaderRepeat = first && headers[0] && first.toLowerCase() === headers[0].toLowerCase();
+    const rowIsBlank = !first && restEmpty;
+
+    if (rowIsBlank) continue;
+    if (isHeaderRepeat) continue;
+
+    const dayIdx = detectDayIndex(first);
+
+    if (dayIdx !== -1) {
+      // This row names a day (e.g. "LOAD IN - SUNDAY"). Switch buckets for
+      // everything after it, whether or not the row also carries its own data.
+      currentIdx = dayIdx;
+      if (!restEmpty) sections[currentIdx].rows.push(row);
+      continue;
+    }
+
+    if (currentIdx === -1) {
+      unassigned.rows.push(row);
+    } else {
+      sections[currentIdx].rows.push(row);
+    }
+  }
+
+  if (unassigned.rows.length) sections.push(unassigned);
+}
+
+function renderDayNav() {
+  const nav = document.getElementById('dayNav');
+  const select = document.getElementById('daySelect');
+  nav.innerHTML = '';
+  select.innerHTML = '<option value="">All Days</option>';
+  sections.forEach((s, i) => {
+    const pill = document.createElement('button');
+    pill.className = 'day-pill';
+    pill.textContent = s.title;
+    pill.onclick = () => document.getElementById('day-section-' + i).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    nav.appendChild(pill);
+
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = s.title;
+    select.appendChild(opt);
+  });
+}
+
+function jumpToDay() {
+  const val = document.getElementById('daySelect').value;
+  if (val === '') return;
+  document.getElementById('day-section-' + val).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function esc(v) {
+  const d = document.createElement('div');
+  d.textContent = v == null ? '' : v;
+  return d.innerHTML;
+}
+
+function renderSchedule() {
+  const container = document.getElementById('scheduleContainer');
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  localStorage.setItem(NAME_KEY, q);
+
+  if (!sections.length) {
+    container.innerHTML = '<div class="state-box">No schedule rows found in the sheet yet.</div>';
+    return;
+  }
+
+  let anyVisible = false;
+  const html = sections.map((s, i) => {
+    const filteredRows = s.rows.filter(row => {
+      if (!q) return true;
+      return row.some(cell => (cell || '').toLowerCase().includes(q));
+    });
+    if (q && filteredRows.length === 0) return '';
+    anyVisible = true;
+
+    const bodyRows = filteredRows.map(row => {
+      const isMatch = q && row.some(cell => (cell || '').toLowerCase().includes(q));
+      const tds = headers.map((h, ci) => `<td data-label="${esc(h)}" class="${h === 'Date' ? 'col-date' : ''}">${esc(row[ci] || '—')}</td>`).join('');
+      return `<tr class="${isMatch ? 'match-highlight' : ''}">${tds}</tr>`;
+    }).join('');
+
+    return `
+      <div class="day-card" id="day-section-${i}">
+        <div class="day-card-header">
+          <span>${esc(s.title)}</span>
+          <span class="day-card-count">${filteredRows.length} ${filteredRows.length === 1 ? 'entry' : 'entries'}</span>
+        </div>
+        <div class="day-card-body">
+          <div class="sched-table-wrap">
+            <table class="sched-table">
+              <thead><tr>${headers.map(h => `<th class="${h === 'Date' ? 'col-date' : ''}">${esc(h)}</th>`).join('')}</tr></thead>
+              <tbody>${bodyRows || `<tr><td colspan="${headers.length}" style="text-align:center;padding:20px;">No entries.</td></tr>`}</tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = anyVisible ? html : '<div class="state-box">No schedule entries match your search.</div>';
+}
+
+function setLive(isLive) {
+  const badge = document.getElementById('liveBadge');
+  const dot = document.getElementById('syncDot');
+  const badgeText = document.getElementById('liveBadgeText');
+  if (isLive) {
+    badge.classList.remove('offline');
+    badgeText.textContent = 'Live';
+    dot.classList.remove('err');
+  } else {
+    badge.classList.add('offline');
+    badgeText.textContent = 'Offline';
+    dot.classList.add('err');
+  }
+}
+
+function updateSyncText() {
+  const txt = document.getElementById('syncText');
+  if (lastSyncedAt) txt.textContent = `Synced ${timeAgo(lastSyncedAt)}`;
+}
+
+function timeAgo(date) {
+  const secs = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (secs < 60) return 'just now';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins} min${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.floor(mins / 60);
+  return `${hrs} hr${hrs === 1 ? '' : 's'} ago`;
+}
+
+function startTickTimer() {
+  if (tickTimer) clearInterval(tickTimer);
+  tickTimer = setInterval(updateSyncText, 30000);
+}
+
+function preparePrint() {
+  const meta = document.getElementById('printMeta');
+  const q = document.getElementById('searchInput').value.trim();
+  const now = new Date();
+  const stamp = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) +
+    ' at ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  meta.textContent = q ? `Generated ${stamp} · Filtered: "${q}"` : `Generated ${stamp}`;
+  window.print();
+}
+
+function toggleAutoRefresh() {
+  autoRefreshOn = !autoRefreshOn;
+  document.getElementById('autoToggle').classList.toggle('on', autoRefreshOn);
+  restartAutoRefresh();
+}
+
+function restartAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  if (autoRefreshOn) {
+    refreshTimer = setInterval(() => loadSchedule(false), REFRESH_INTERVAL_MS);
+  }
+}
+
+function saveCache() {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ sections, headers, savedAt: new Date().toISOString() }));
+  } catch (e) {}
+}
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function showBanner(cls, msg) {
+  const container = document.getElementById('scheduleContainer');
+  const existing = document.getElementById('syncBanner');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'syncBanner';
+  div.className = 'notice ' + cls;
+  div.textContent = msg;
+  container.parentNode.insertBefore(div, container);
+}
+
+// Restore last search
+document.addEventListener('DOMContentLoaded', () => {
+  const savedName = localStorage.getItem(NAME_KEY);
+  if (savedName) document.getElementById('searchInput').value = savedName;
+  loadSchedule(false);
+});
+</script>
+</body>
+</html>
